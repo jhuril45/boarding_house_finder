@@ -17,7 +17,7 @@
     <div>
       <!-- Featured Properties -->
       <div class="featured-properties">
-        <div class="featured-properties-title">Featured Properties</div>
+        <div class="featured-properties-title">Featured Listing</div>
         <q-scroll-area class="properties-scroll" style="height: 320px">
           <div class="properties-list">
             <q-item
@@ -39,7 +39,10 @@
                     <div class="property-content">
                       <div class="property-title">{{ property.title }}</div>
                       <div class="property-subtitle">
-                        {{ property.subtitle }}
+                        {{ formatCurrency(property.price) + "/Month" }}
+                      </div>
+                      <div class="property-subtitle">
+                        {{ property.description }}
                       </div>
                     </div>
                   </div>
@@ -73,7 +76,7 @@
                       <q-item-label lines="1">
                         <div class="property-title">{{ property.title }}</div>
                         <div class="property-subtitle">
-                          {{ parseInt(index + 1) + "000/Month" }}
+                          {{ formatCurrency(property.price) + "/Month" }}
                         </div>
                       </q-item-label>
                     </q-item-section>
@@ -92,26 +95,11 @@
 import { ref } from "vue";
 import { useUserStore } from "stores/user";
 import { storeToRefs } from "pinia";
+import useFormatter from "@/composables/useFormatter";
+
+const { formatCurrency } = useFormatter();
 
 const searchQuery = ref("");
-
-const featuredProperties = ref([
-  {
-    img: "https://picsum.photos/id/1015/200/200",
-    title: "Beautiful Property 1",
-    subtitle: "Lorem ipsum dolor sit amet",
-  },
-  {
-    img: "https://picsum.photos/id/1016/200/200",
-    title: "Stunning Property 2",
-    subtitle: "Sed ut perspiciatis unde",
-  },
-  {
-    img: "https://picsum.photos/id/1018/200/200",
-    title: "Modern Property 3",
-    subtitle: "Neque porro quisquam est",
-  },
-]);
 
 const userStore = useUserStore();
 const { listings } = storeToRefs(userStore);

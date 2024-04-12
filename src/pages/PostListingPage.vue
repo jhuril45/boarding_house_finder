@@ -1,6 +1,6 @@
 <template>
   <q-page>
-    <q-form @submit="submitLocation" greedy ref="form_ref">
+    <q-form @submit="submitListing" greedy ref="form_ref">
       <q-card class="post-listing-card">
         <q-card-section>
           <q-input
@@ -8,7 +8,7 @@
             label="Title"
             v-model="form.title"
             placeholder="Enter title"
-            :rules="[(val) => !!val || 'Email is required']"
+            :rules="[(val) => !!val || 'Invalid Title']"
             hide-bottom-space
           />
         </q-card-section>
@@ -20,7 +20,8 @@
             label="Price"
             v-model="form.price"
             placeholder="Enter price"
-            :rules="[(val) => !!val || 'Price is required']"
+            number
+            :rules="[(val) => (!!val && val > 0) || 'Invalid Price']"
             hide-bottom-space
           />
         </q-card-section>
@@ -32,7 +33,7 @@
             label="Rooms"
             v-model="form.rooms"
             placeholder="Enter number of rooms"
-            :rules="[(val) => !!val || 'Rooms is required']"
+            :rules="[(val) => !!val || 'Invalid Rooms']"
             hide-bottom-space
           />
         </q-card-section>
@@ -45,7 +46,7 @@
             placeholder="Enter description"
             type="textarea"
             rows="5"
-            :rules="[(val) => !!val || 'Description is required']"
+            :rules="[(val) => !!val || 'Invalid Description']"
             hide-bottom-space
           />
         </q-card-section>
@@ -55,7 +56,7 @@
             outlined
             class="q-mb-md"
             v-model="form.location"
-            :rules="[(val) => !!val || 'Location is required']"
+            :rules="[(val) => !!val || ' is required Location']"
             hide-bottom-space
           >
             <template v-slot:control>
@@ -66,11 +67,7 @@
             </template>
           </q-field>
 
-          <q-btn
-            color="primary"
-            @touchstart.prevent=""
-            @click="getCurrentLocation"
-          >
+          <q-btn color="primary" @click="getCurrentLocation">
             Select Location
           </q-btn>
         </q-card-section>
@@ -80,11 +77,11 @@
             outlined
             class="q-mb-md"
             v-model="form.img"
-            :rules="[(val) => !!val || 'Image is required']"
+            :rules="[(val) => !!val || 'Invalid Image']"
             hide-bottom-space
           >
             <template v-slot:control>
-              <div class="full-width row justify-center">
+              <div class="full-width row justify-center" @click="captureImage">
                 <q-img
                   fit="contain"
                   height="150px"
@@ -148,9 +145,12 @@
 import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
+import { useUserStore } from "stores/user";
 
 import LocationPicker from "../components/LocationPicker.vue";
 
+const userStore = useUserStore();
+console.log("userStore", userStore);
 const $q = useQuasar();
 
 const form_ref = ref(null);
@@ -210,8 +210,10 @@ function onLocationSelected(location) {
   form.value.location = location;
 }
 
-function submitLocation() {
-  console.log("submitLocation", $q);
+async function submitListing() {
+  console.log("submitListing", form.value);
+  const data = await userStore.submitListing(form.value);
+  console.log("submitListing", data);
   $q.notify({
     message: "Success",
     color: "green",
@@ -225,7 +227,7 @@ function submitLocation() {
   //   bathrooms: null,
   //   description: "",
   // };
-  // console.log("submitLocation", form_ref.value);
+  // console.log("submitListing", form_ref.value);
   // setTimeout(() => {
   //   form_ref.value.resetValidation();
   // }, 100);
