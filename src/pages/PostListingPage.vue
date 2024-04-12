@@ -1,0 +1,267 @@
+<template>
+  <q-page>
+    <q-form @submit="submitLocation" greedy ref="form_ref">
+      <q-card class="post-listing-card">
+        <q-card-section>
+          <q-input
+            outlined
+            label="Title"
+            v-model="form.title"
+            placeholder="Enter title"
+            :rules="[(val) => !!val || 'Email is required']"
+            hide-bottom-space
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            outlined
+            type="number"
+            label="Price"
+            v-model="form.price"
+            placeholder="Enter price"
+            :rules="[(val) => !!val || 'Price is required']"
+            hide-bottom-space
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            outlined
+            type="number"
+            label="Rooms"
+            v-model="form.rooms"
+            placeholder="Enter number of rooms"
+            :rules="[(val) => !!val || 'Rooms is required']"
+            hide-bottom-space
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            outlined
+            label="Description"
+            v-model="form.description"
+            placeholder="Enter description"
+            type="textarea"
+            rows="5"
+            :rules="[(val) => !!val || 'Description is required']"
+            hide-bottom-space
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <q-field
+            outlined
+            class="q-mb-md"
+            v-model="form.location"
+            :rules="[(val) => !!val || 'Location is required']"
+            hide-bottom-space
+          >
+            <template v-slot:control>
+              <div>
+                Latitude: {{ form.location?.latitude || "" }} <br />
+                Longitude: {{ form.location?.longitude || "" }}
+              </div>
+            </template>
+          </q-field>
+
+          <q-btn
+            color="primary"
+            @touchstart.prevent=""
+            @click="getCurrentLocation"
+          >
+            Select Location
+          </q-btn>
+        </q-card-section>
+
+        <q-card-section>
+          <q-field
+            outlined
+            class="q-mb-md"
+            v-model="form.img"
+            :rules="[(val) => !!val || 'Image is required']"
+            hide-bottom-space
+          >
+            <template v-slot:control>
+              <div class="full-width row justify-center">
+                <q-img
+                  fit="contain"
+                  height="150px"
+                  width="100%"
+                  :src="form.img"
+                  v-if="form.img"
+                />
+                <q-icon
+                  name="cloud_upload"
+                  color="grey"
+                  class="dropzone-icon"
+                  size="150px"
+                  v-else
+                />
+              </div>
+            </template>
+          </q-field>
+
+          <q-btn color="primary" @touchstart.prevent="" @click="captureImage">
+            {{ form.img ? "Change" : "Add" }} Image
+          </q-btn>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            size="lg"
+            class="full-width q-my-md"
+            label="Post Listing"
+            color="primary"
+            type="submit"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-form>
+
+    <q-dialog v-model="location_modal" persistent maximized>
+      <q-card>
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Select Location</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <LocationPicker @location-selected="onLocationSelected" />
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn
+            label="Close"
+            color="primary"
+            @click="location_modal = false"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
+</template>
+
+<script setup>
+import { ref, watch, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
+
+import LocationPicker from "../components/LocationPicker.vue";
+
+const $q = useQuasar();
+
+const form_ref = ref(null);
+const router = useRouter();
+
+const form = ref({
+  title: "",
+  location: null,
+  price: null,
+  rooms: null,
+  bathrooms: null,
+  description: "",
+  img: null,
+});
+
+const location = ref(null);
+const map = ref(null);
+const marker = ref(null);
+const location_modal = ref(false);
+
+const getCurrentLocation = () => {
+  location_modal.value = true;
+  // navigator.geolocation.getCurrentPosition(
+  //   (position) => {
+  //     location.value = {
+  //       latitude: position.coords.latitude,
+  //       longitude: position.coords.longitude,
+  //     };
+  //     console.log("location.value", location.value);
+  //     initMap();
+  //   },
+  //   (error) => {
+  //     console.error("Error getting location:", error);
+  //   }
+  // );
+};
+
+const captureImage = () => {
+  navigator.camera.getPicture(
+    (imageData) => {
+      // imageUrl.value = "data:image/jpeg;base64," + imageData;
+      form.value.img = "data:image/jpeg;base64," + imageData;
+      // console.log("captureImage", imageData);
+    },
+    (message) => {
+      console.error("Camera error: " + message);
+    },
+    {
+      quality: 50,
+      destinationType: Camera.DestinationType.DATA_URL,
+    }
+  );
+};
+
+function onLocationSelected(location) {
+  console.log("onLocationSelected", location);
+  form.value.location = location;
+}
+
+function submitLocation() {
+  console.log("submitLocation", $q);
+  $q.notify({
+    message: "Success",
+    color: "green",
+  });
+  router.push("/home");
+  // form.value = {
+  //   title: "",
+  //   location: null,
+  //   price: null,
+  //   rooms: null,
+  //   bathrooms: null,
+  //   description: "",
+  // };
+  // console.log("submitLocation", form_ref.value);
+  // setTimeout(() => {
+  //   form_ref.value.resetValidation();
+  // }, 100);
+}
+
+onMounted(() => {
+  // setTimeout(() => {
+  //   getCurrentLocation();
+  // }, 1000);
+});
+</script>
+
+<style lang="scss">
+.post-listing-card {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+
+  .q-card-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .q-card-section {
+    margin-bottom: 20px;
+  }
+
+  .q-input {
+    max-width: 400px;
+  }
+
+  .q-card-actions {
+    justify-content: flex-end;
+  }
+}
+</style>
