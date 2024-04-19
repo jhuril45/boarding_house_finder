@@ -1,85 +1,120 @@
 <template>
   <q-page>
-    <q-page-container>
-      <!-- Listing Image -->
-      <q-img
-        :src="listing.imageUrl"
-        :alt="listing.title"
-        style="height: 300px; object-fit: cover"
-      />
+    <!-- Listing Image -->
+    <q-img
+      :src="listing.img"
+      :alt="listing.title"
+      style="height: 300px; object-fit: cover"
+    />
 
-      <!-- Listing Details -->
-      <q-card class="listing-card">
+    <!-- Listing Details -->
+    <q-card class="listing-card">
+      <q-card-section class="host-section q-pb-sm">
+        <q-card-title>
+          <div class="host-name">{{ listing.title }}</div>
+        </q-card-title>
+      </q-card-section>
+
+      <q-card-section class="details-section">
+        <div class="detail-item">
+          <q-icon name="local_offer" /> Price:
+          <span class="detail-value">{{ formatCurrency(listing.price) }}</span>
+        </div>
+        <div class="detail-item">
+          <q-icon name="phone" /> Contact Number:
+          <span class="detail-value">{{ listing.contact_number }}</span>
+        </div>
+        <div class="detail-item">
+          <q-icon name="email" /> Email:
+          <span class="detail-value">{{ listing.user }}</span>
+        </div>
+        <!-- Add more details as needed -->
+      </q-card-section>
+
+      <!-- Description -->
+      <q-card-section class="description-section">
+        <q-card-title class="description-title">Description</q-card-title>
+        <div class="description-text">{{ listing.description }}</div>
+      </q-card-section>
+
+      <!-- Add buttons or actions -->
+      <q-card-actions align="right" class="q-pb-xl">
+        <q-btn label="View Location" color="primary" @click="displayMaps" />
+      </q-card-actions>
+    </q-card>
+
+    <q-dialog v-model="location_modal" persistent maximized>
+      <q-card>
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">View Location</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
         <q-card-section>
-          <q-card-title>{{ listing.title }}</q-card-title>
-          <q-card-subtitle>{{ listing.location }}</q-card-subtitle>
+          <LocationViewer :location="listing.location" />
         </q-card-section>
 
-        <q-card-section class="host-section">
-          <q-avatar>
-            <img :src="listing.host.avatar" />
-          </q-avatar>
-          <div class="host-name">{{ listing.host.name }}</div>
-        </q-card-section>
-
-        <q-card-section class="details-section">
-          <div class="detail-item">
-            <q-icon name="local_offer" /> Price:
-            <span class="detail-value">{{ listing.price }}</span>
-          </div>
-          <div class="detail-item">
-            <q-icon name="hotel" /> Rooms:
-            <span class="detail-value">{{ listing.rooms }}</span>
-          </div>
-          <div class="detail-item">
-            <q-icon name="bathtub" /> Bathrooms:
-            <span class="detail-value">{{ listing.bathrooms }}</span>
-          </div>
-          <!-- Add more details as needed -->
-        </q-card-section>
-
-        <!-- Description -->
-        <q-card-section class="description-section">
-          <q-card-title class="description-title">Description</q-card-title>
-          <div class="description-text">{{ listing.description }}</div>
-        </q-card-section>
-
-        <!-- Add buttons or actions -->
         <q-card-actions align="right">
-          <q-btn label="Contact Host" color="primary" @click="contactHost" />
+          <q-btn
+            label="Close"
+            color="primary"
+            @click="location_modal = false"
+          />
         </q-card-actions>
       </q-card>
-    </q-page-container>
+    </q-dialog>
   </q-page>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      listing: {
-        title: "Listing Title",
-        location: "Listing Location",
-        imageUrl: "https://via.placeholder.com/400",
-        host: {
-          name: "Host Name",
-          avatar: "https://via.placeholder.com/50",
-        },
-        price: "$100",
-        rooms: 3,
-        bathrooms: 2,
-        description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-        // Add more details from your Figma design
-      },
-    };
+<script setup>
+import { ref, watch, onMounted } from "vue";
+import { useRoute } from "vue-router";
+import { useUserStore } from "stores/user";
+import { storeToRefs } from "pinia";
+import LocationViewer from "@/components/LocationViewer.vue";
+import useFormatter from "@/composables/useFormatter";
+
+const route = useRoute();
+const userStore = useUserStore();
+const { getListings } = storeToRefs(userStore);
+
+const { formatCurrency } = useFormatter();
+
+const listing = ref({
+  title: "Listing Title",
+  location: "Listing Location",
+  img: "https://via.placeholder.com/400",
+  host: {
+    name: "Host Name",
+    avatar: "https://via.placeholder.com/50",
   },
-  methods: {
-    contactHost() {
-      // Implement your contact host logic here
-      console.log("Contacting host...");
-    },
+  price: "$100",
+  rooms: 3,
+  bathrooms: 2,
+  description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
+  location: {
+    // latitude: Math.random() * 180 - 90,
+    // longitude: Math.random() * 360 - 180,
+    latitude: 8.9538327,
+    longitude: 125.529305,
   },
-};
+});
+
+const location_modal = ref(false);
+
+function displayMaps() {
+  location_modal.value = true;
+  console.log("Contacting host...");
+}
+
+onMounted(() => {
+  console.log("route", route.params);
+  console.log("getListings", getListings.value);
+  listing.value = getListings.value.find(
+    (x) => x.id == route.params.property_id
+  );
+});
 </script>
 
 <style lang="scss">
@@ -94,7 +129,6 @@ export default {
 .host-section {
   display: flex;
   align-items: center;
-  margin-bottom: 20px;
 
   .q-avatar img {
     border-radius: 50%;
@@ -129,8 +163,6 @@ export default {
 }
 
 .description-section {
-  margin-top: 20px;
-
   .description-title {
     font-size: 24px;
     font-weight: bold;

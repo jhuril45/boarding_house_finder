@@ -6,22 +6,22 @@
       style="width: 60vw; height: 60vh"
     />
     <div class="full-width q-px-sm">
-      <div class="full-width q-px-sm q-py-sm">
+      <!-- <div class="full-width q-px-sm q-py-sm">
         <q-btn
           class="full-width"
           size="lg"
           label="Are you a user?"
           color="grey"
-          to="/register"
+          to="/auth/register"
         />
-      </div>
+      </div> -->
       <div class="full-width q-px-sm q-py-sm">
         <q-btn
           class="full-width"
           size="lg"
-          label="Are you a owner?"
+          label="Create Account"
           color="primary"
-          to="/register"
+          to="/auth/register"
         />
       </div>
     </div>

@@ -30,10 +30,10 @@
           <q-input
             outlined
             type="number"
-            label="Rooms"
-            v-model="form.rooms"
-            placeholder="Enter number of rooms"
-            :rules="[(val) => !!val || 'Invalid Rooms']"
+            label="Contact Number"
+            v-model="form.contact_number"
+            placeholder="Enter number of contact number"
+            :rules="[(val) => !!val || 'Invalid Contact Number']"
             hide-bottom-space
           />
         </q-card-section>
@@ -161,6 +161,7 @@ const form = ref({
   location: null,
   price: null,
   rooms: null,
+  contact_number: null,
   bathrooms: null,
   description: "",
   img: null,

@@ -24,7 +24,7 @@
               v-for="(property, index) in listings"
               :key="index"
               class="q-pa-none"
-              :to="'/property/' + index"
+              :to="'/property/' + property.id"
             >
               <q-item-section>
                 <q-item-label>

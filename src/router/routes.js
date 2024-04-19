@@ -2,18 +2,13 @@ const routes = [
   {
     path: "/",
     component: () => import("layouts/MainLayout.vue"),
+    meta: {
+      requiresAuth: true,
+    },
     children: [
-      { path: "", component: () => import("pages/IndexPage.vue") },
-      {
-        path: "register",
-        component: () => import("pages/RegistrationPage.vue"),
-      },
-      {
-        path: "login",
-        component: () => import("pages/LoginPage.vue"),
-      },
       {
         path: "home",
+        name: "Home",
         component: () => import("pages/HomePage.vue"),
       },
       {
@@ -23,6 +18,27 @@ const routes = [
       {
         path: "post-listing",
         component: () => import("pages/PostListingPage.vue"),
+      },
+    ],
+  },
+  {
+    path: "/auth/",
+    component: () => import("layouts/MainLayout.vue"),
+    children: [
+      {
+        path: "",
+        name: "Landing",
+        component: () => import("pages/IndexPage.vue"),
+      },
+      {
+        path: "register",
+        name: "Register",
+        component: () => import("pages/RegistrationPage.vue"),
+      },
+      {
+        path: "login",
+        name: "Login",
+        component: () => import("pages/LoginPage.vue"),
       },
     ],
   },

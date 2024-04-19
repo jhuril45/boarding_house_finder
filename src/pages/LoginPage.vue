@@ -46,7 +46,7 @@
             <q-card-actions align="center">
               <span class="text-caption">Dont have an account yet?</span>
               <q-btn
-                to="/register"
+                to="/auth/register"
                 color="primary"
                 label="Create Account"
                 flat
@@ -63,6 +63,9 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "stores/user";
+
+const userStore = useUserStore();
 
 const router = useRouter();
 
@@ -83,6 +86,10 @@ const passwordRules = ref([
 
 async function submitForm() {
   console.log("Form submitted:", formData.value);
+  await userStore.login({
+    email: formData.value.email,
+    password: formData.value.password,
+  });
   router.push("/home");
 }
 </script>

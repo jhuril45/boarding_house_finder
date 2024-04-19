@@ -62,7 +62,13 @@
           <div class="signup-footer">
             <q-card-actions align="center">
               <span class="text-caption">Already have an account?</span>
-              <q-btn to="/login" color="primary" label="Sign In" flat dense />
+              <q-btn
+                to="/auth/login"
+                color="primary"
+                label="Sign In"
+                flat
+                dense
+              />
             </q-card-actions>
           </div>
         </q-card-section>
@@ -74,6 +80,9 @@
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useUserStore } from "stores/user";
+
+const userStore = useUserStore();
 
 const router = useRouter();
 
@@ -101,11 +110,11 @@ const confirmPasswordRules = ref([
   (val) => val === formData.value.password || "Passwords do not match",
 ]);
 
-const submitForm = () => {
-  // Add form submission logic here
+async function submitForm() {
   console.log("Form submitted:", formData.value);
+  await userStore.register(formData.value);
   router.push("/home");
-};
+}
 </script>
 
 <style scoped>
