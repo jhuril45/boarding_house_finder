@@ -68,10 +68,10 @@ function calculateAndDisplayRoute(directionsService, directionsRenderer) {
     (position) => {
       console.log("position", position);
       var start = new google.maps.LatLng(
-        8.9538327,
-        125.529305
-        // position.coords.latitude,
-        // position.coords.longitude
+        // 8.9538327,
+        // 125.529305
+        position.coords.latitude,
+        position.coords.longitude
         // parseFloat(getUserLocation.value.latitude).toFixed(2),
         // parseFloat(getUserLocation.value.longitude).toFixed(2)
 
