@@ -4,8 +4,10 @@ export const useUserStore = defineStore("counter", {
   state: () => ({
     user: null,
     location: {
-      latitude: 8.953832747489257,
-      longtitude: 125.52930526226622,
+      latitude: 8.9538327,
+      longitude: 125.529305,
+      // latitude: 0,
+      // longtitude: 0,
     },
     listings: [
       {
@@ -63,6 +65,9 @@ export const useUserStore = defineStore("counter", {
     getListings(state) {
       return state.listings;
     },
+    getUserLocation(state) {
+      return state.location;
+    },
   },
 
   actions: {
@@ -88,6 +93,7 @@ export const useUserStore = defineStore("counter", {
     getCurrentLocation() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          console.log("this.location", this.location);
           this.location = {
             latitude: position.coords.latitude,
             longitude: position.coords.longitude,

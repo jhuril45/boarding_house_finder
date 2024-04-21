@@ -52,7 +52,7 @@
         </q-card-section>
 
         <q-card-section>
-          <LocationViewer :location="listing.location" />
+          <DirectionViewer :location="listing.location" />
         </q-card-section>
 
         <q-card-actions align="right">
@@ -72,7 +72,7 @@ import { ref, watch, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { useUserStore } from "stores/user";
 import { storeToRefs } from "pinia";
-import LocationViewer from "@/components/LocationViewer.vue";
+import DirectionViewer from "@/components/DirectionViewer.vue";
 import useFormatter from "@/composables/useFormatter";
 
 const route = useRoute();
