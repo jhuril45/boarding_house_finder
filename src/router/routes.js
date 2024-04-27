@@ -7,9 +7,18 @@ const routes = [
     },
     children: [
       {
+        path: "/",
+        component: () => import("pages/HomePage.vue"),
+      },
+      {
         path: "home",
         name: "Home",
         component: () => import("pages/HomePage.vue"),
+      },
+      {
+        path: "bookings",
+        name: "Bookings",
+        component: () => import("pages/BookingsPage.vue"),
       },
       {
         path: "property/:property_id",
@@ -17,6 +26,10 @@ const routes = [
       },
       {
         path: "post-listing",
+        component: () => import("pages/PostListingPage.vue"),
+      },
+      {
+        path: "post-listing/:property_id",
         component: () => import("pages/PostListingPage.vue"),
       },
     ],
@@ -31,7 +44,7 @@ const routes = [
         component: () => import("pages/IndexPage.vue"),
       },
       {
-        path: "register",
+        path: "register/:user_type",
         name: "Register",
         component: () => import("pages/RegistrationPage.vue"),
       },

@@ -17,10 +17,8 @@
     <div>
       <!-- Featured Properties -->
       <div class="featured-properties">
-        <div class="featured-properties-title">
-          {{ is_owner ? "My" : "Featured" }} Listings
-        </div>
-        <q-scroll-area class="properties-scroll" style="height: 320px">
+        <div class="featured-properties-title">My Bookings</div>
+        <q-scroll-area class="properties-scroll" style="height: 400px">
           <div class="properties-list">
             <q-item
               v-for="(property, index) in listings"
@@ -46,46 +44,18 @@
                       <div class="property-subtitle">
                         {{ property.description }}
                       </div>
+                      <div class="property-title q-mt-sm">
+                        {{
+                          formatDateDisplay(
+                            new Date(property.date + " " + property.time)
+                          )
+                        }}
+                      </div>
                     </div>
                   </div>
                 </q-item-label>
               </q-item-section>
             </q-item>
-          </div>
-        </q-scroll-area>
-      </div>
-
-      <div class="featured-properties q-mt-3 q-py-4" v-if="!is_owner">
-        <div class="featured-properties-title">New Listing</div>
-        <q-scroll-area class="properties-scroll" style="height: 130px">
-          <div class="properties-list">
-            <div
-              class="q-px-sm"
-              v-for="(property, index) in listings"
-              :key="index"
-            >
-              <q-card>
-                <div>
-                  <q-item clickable class="property-item q-pa-none">
-                    <q-item-section side>
-                      <q-img
-                        :src="property.img"
-                        :alt="property.title"
-                        class="property-img"
-                      />
-                    </q-item-section>
-                    <q-item-section class="q-px-sm">
-                      <q-item-label lines="1">
-                        <div class="property-title">{{ property.title }}</div>
-                        <div class="property-subtitle">
-                          {{ formatCurrency(property.price) + "/Month" }}
-                        </div>
-                      </q-item-label>
-                    </q-item-section>
-                  </q-item>
-                </div>
-              </q-card>
-            </div>
           </div>
         </q-scroll-area>
       </div>
@@ -99,20 +69,31 @@ import { useUserStore } from "stores/user";
 import { storeToRefs } from "pinia";
 import useFormatter from "@/composables/useFormatter";
 
-const { formatCurrency } = useFormatter();
+const { formatCurrency, formatDateDisplay } = useFormatter();
 
 const searchQuery = ref("");
 
 const userStore = useUserStore();
-const { getUser, getListings, getMyListings } = storeToRefs(userStore);
+const { getListings, getMyBookings } = storeToRefs(userStore);
 
 const is_owner = computed(() => {
   return getUser.value?.user_type == "owner";
 });
 
 const listings = computed(() => {
-  console.log("getUser", getUser.value);
-  return is_owner.value ? getMyListings.value : getListings.value;
+  const listing_arr = getListings.value
+    .filter(
+      (x) => getMyBookings.value.findIndex((y) => y.listing_id == x.id) >= 0
+    )
+    .map((x) => {
+      return {
+        ...x,
+        ...getMyBookings.value.find((y) => y.listing_id == x.id),
+      };
+    });
+
+  console.log("listing_arr", listing_arr);
+  return listing_arr;
 });
 </script>
 

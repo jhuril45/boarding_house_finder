@@ -2,6 +2,8 @@ import { storeToRefs } from "pinia";
 import { useUserStore } from "stores/user";
 
 export default async ({ app, store, router, axios }) => {
+  window.RawFile = File;
+
   const userStore = useUserStore();
 
   const { getUser } = storeToRefs(userStore);
@@ -11,6 +13,7 @@ export default async ({ app, store, router, axios }) => {
    * Before each route update
    */
   router.beforeEach((to, from, next) => {
+    console.log("to:", to);
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       if (!getUser.value) {
         next({
@@ -19,10 +22,10 @@ export default async ({ app, store, router, axios }) => {
       } else {
         next();
       }
-    } else if (to.matched.some((record) => record.name === "Login")) {
+    } else if (to.matched.some((record) => record.path.includes("auth"))) {
       if (getUser.value) {
         next({
-          name: "Landing",
+          name: "Home",
         });
       } else {
         next();

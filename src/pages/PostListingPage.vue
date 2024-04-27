@@ -76,12 +76,16 @@
           <q-field
             outlined
             class="q-mb-md"
+            label="Featured Image"
             v-model="form.img"
             :rules="[(val) => !!val || 'Invalid Image']"
             hide-bottom-space
           >
             <template v-slot:control>
-              <div class="full-width row justify-center" @click="captureImage">
+              <div
+                class="full-width row justify-center q-mt-sm"
+                @click="captureImage()"
+              >
                 <q-img
                   fit="contain"
                   height="150px"
@@ -100,8 +104,85 @@
             </template>
           </q-field>
 
-          <q-btn color="primary" @touchstart.prevent="" @click="captureImage">
-            {{ form.img ? "Change" : "Add" }} Image
+          <q-btn color="primary" @click="captureImage()">
+            {{ form.img ? "Change" : "Select" }} Featured Image
+          </q-btn>
+        </q-card-section>
+
+        <q-card-section>
+          <q-field
+            outlined
+            class="q-mb-md"
+            label="Business Permit Image"
+            v-model="form.business_permit_img"
+            :rules="[(val) => !!val || 'Invalid Image']"
+            hide-bottom-space
+          >
+            <template v-slot:control>
+              <div
+                class="full-width row justify-center q-mt-sm"
+                @click="captureImage('business_permit')"
+              >
+                <q-img
+                  fit="contain"
+                  height="150px"
+                  width="100%"
+                  :src="form.business_permit_img"
+                  v-if="form.business_permit_img"
+                />
+                <q-icon
+                  name="cloud_upload"
+                  color="grey"
+                  class="dropzone-icon full-width"
+                  size="150px"
+                  v-else
+                />
+              </div>
+            </template>
+          </q-field>
+
+          <q-btn color="primary" @click="captureImage('business_permit')">
+            {{ form.business_permit_img ? "Change" : "Select" }} Business Permit
+            Image
+          </q-btn>
+        </q-card-section>
+
+        <q-card-section>
+          <div class="full-width row justify-center">
+            <q-carousel
+              animated
+              v-model="slide"
+              arrows
+              navigation
+              infinite
+              v-if="form.other_images.length"
+              height="300px"
+              class="col-12"
+            >
+              <q-carousel-slide
+                :key="'other-img-' + index"
+                :name="parseInt(index + 1)"
+                v-for="(img, index) in form.other_images"
+                :img-src="img"
+              />
+            </q-carousel>
+            <q-icon
+              name="cloud_upload"
+              color="grey"
+              class="dropzone-icon"
+              size="150px"
+              @click="captureImage('other_images')"
+              v-else
+            />
+          </div>
+
+          <q-btn
+            class="q-mt-sm"
+            color="primary"
+            @click="captureImage('other_images')"
+            type="button"
+          >
+            {{ form.other_images.length ? "Add" : "Select" }} Other Images
           </q-btn>
         </q-card-section>
 
@@ -146,15 +227,20 @@ import { ref, watch, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useQuasar } from "quasar";
 import { useUserStore } from "stores/user";
+import { useRoute } from "vue-router";
 
 import LocationPicker from "../components/LocationPicker.vue";
 
+const route = useRoute();
 const userStore = useUserStore();
 console.log("userStore", userStore);
 const $q = useQuasar();
 
 const form_ref = ref(null);
 const router = useRouter();
+const request_files = ref(null);
+const loading = ref(false);
+const slide = ref(1);
 
 const form = ref({
   title: "",
@@ -165,6 +251,9 @@ const form = ref({
   bathrooms: null,
   description: "",
   img: null,
+  business_permit_img: null,
+  business_permit: null,
+  other_images: [],
 });
 
 const location = ref(null);
@@ -189,19 +278,30 @@ const getCurrentLocation = () => {
   // );
 };
 
-const captureImage = () => {
+const captureImage = (type = "img") => {
   navigator.camera.getPicture(
     (imageData) => {
+      console.log("imageData", imageData);
       // imageUrl.value = "data:image/jpeg;base64," + imageData;
-      form.value.img = "data:image/jpeg;base64," + imageData;
-      // console.log("captureImage", imageData);
+      if (type == "img") {
+        form.value.img = "data:image/jpeg;base64," + imageData;
+      } else if (type == "business_permit") {
+        form.value.business_permit_img = "data:image/jpeg;base64," + imageData;
+      } else if (type == "other_images") {
+        form.value.other_images.push("data:image/jpeg;base64," + imageData);
+      }
     },
     (message) => {
       console.error("Camera error: " + message);
     },
     {
       quality: 50,
+      // destinationType: Camera.DestinationType.FILE_URI,
+      encodingType: Camera.EncodingType.JPEG,
       destinationType: Camera.DestinationType.DATA_URL,
+      // sourceType: Camera.PictureSourceType.CAMERA,
+      sourceType: 1,
+      // destinationType: 1,
     }
   );
 };

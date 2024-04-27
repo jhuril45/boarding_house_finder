@@ -1,1 +1,7 @@
 // app global css in SCSS form
+.sticky-bottom {
+  bottom: 0;
+  z-index: 999;
+  position: sticky !important;
+  position: -webkit-sticky !important;
+}

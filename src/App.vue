@@ -10,6 +10,7 @@ export default defineComponent({
   name: "App",
   methods: {
     requestLocationPermission() {
+      console.log("this", this.$q.platform.is.cordova);
       const permissions = cordova.plugins.permissions;
       console.log("permissions", permissions);
       permissions.checkPermission(
@@ -56,7 +57,9 @@ export default defineComponent({
     },
   },
   mounted() {
-    this.requestLocationPermission();
+    if (this.$q.platform.is.cordova) {
+      this.requestLocationPermission();
+    }
 
     // const script = document.createElement("script");
     // script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC4yLWq_DDK0EDdiiC3u6NsMrrlzVMSuz0`;

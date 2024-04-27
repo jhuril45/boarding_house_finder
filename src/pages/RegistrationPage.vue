@@ -33,6 +33,14 @@
               :rules="emailRules"
             />
             <q-input
+              v-model="formData.contact_number"
+              label="Contact Number"
+              dense
+              outlined
+              placeholder="Enter your contact number"
+              :rules="nameRules"
+            />
+            <q-input
               v-model="formData.password"
               label="Password"
               dense
@@ -81,16 +89,20 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "stores/user";
+import { useRoute } from "vue-router";
 
 const userStore = useUserStore();
 
 const router = useRouter();
+const route = useRoute();
 
 const formData = ref({
   name: "Test",
   email: "test@gmail.com",
+  contact_number: "09123456789",
   password: "password",
   confirmPassword: "password",
+  user_type: route.params.user_type,
 });
 
 const nameRules = ref([(val) => !!val || "Name is required"]);
@@ -98,6 +110,11 @@ const nameRules = ref([(val) => !!val || "Name is required"]);
 const emailRules = ref([
   (val) => !!val || "Email is required",
   (val) => /.+@.+\..+/.test(val) || "Invalid email format",
+]);
+
+const contact_numberRules = ref([
+  (val) => !!val || "Contact Number is required",
+  (val) => val.length >= 8 || "Contact Number must be at least 5 characters",
 ]);
 
 const passwordRules = ref([

@@ -1,11 +1,28 @@
 <template>
-  <q-page>
+  <q-page v-if="listing">
     <!-- Listing Image -->
-    <q-img
+    <!-- <q-img
       :src="listing.img"
       :alt="listing.title"
       style="height: 300px; object-fit: cover"
-    />
+    /> -->
+    <q-carousel
+      animated
+      v-model="slide"
+      arrows
+      navigation
+      infinite
+      height="300px"
+    >
+      <q-carousel-slide
+        :key="'other-img-' + index"
+        :name="parseInt(index + 1)"
+        v-for="(img, index) in [listing.img, ...listing.other_images]"
+        :img-src="img"
+      >
+        <q-img :src="img" style="height: 300px; object-fit: cover" />
+      </q-carousel-slide>
+    </q-carousel>
 
     <!-- Listing Details -->
     <q-card class="listing-card">
@@ -37,9 +54,36 @@
         <div class="description-text">{{ listing.description }}</div>
       </q-card-section>
 
+      <q-card-section class="description-section">
+        <q-card-title class="description-title">Business Permit</q-card-title>
+        <div>
+          <q-img
+            :src="listing.business_permit_img"
+            style="height: 300px; object-fit: cover"
+          />
+        </div>
+      </q-card-section>
+
       <!-- Add buttons or actions -->
       <q-card-actions align="right" class="q-pb-xl">
-        <q-btn label="View Location" color="primary" @click="displayMaps" />
+        <q-page-sticky>
+          <div class="q-pa-lg row">
+            <div class="q-pa-xs" v-if="!is_owner">
+              <q-btn label="Book " color="primary" @click="initBooking" />
+            </div>
+            <div class="q-pa-xs">
+              <q-btn
+                label="Edit "
+                color="primary"
+                @click="displayMaps"
+                v-if="is_owner && getUser.email == listing.user"
+              />
+            </div>
+            <div class="q-pa-xs">
+              <q-btn label="Location" color="primary" @click="displayMaps" />
+            </div>
+          </div>
+        </q-page-sticky>
       </q-card-actions>
     </q-card>
 
@@ -64,27 +108,101 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="bookingModal" persistent>
+      <q-card style="min-width: 300px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Add Booking</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-form @submit="submitBooking" greedy ref="form_ref">
+            <q-input
+              label="Date"
+              v-model="bookingForm.date"
+              mask="date"
+              :rules="['date']"
+            >
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-date v-model="bookingForm.date">
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-date>
+              </q-popup-proxy>
+            </q-input>
+            <q-input
+              v-model="bookingForm.time"
+              mask="time"
+              :rules="['time']"
+              label="Time"
+            >
+              <q-popup-proxy
+                cover
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-time v-model="bookingForm.time">
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Close" color="primary" flat />
+                  </div>
+                </q-time>
+              </q-popup-proxy>
+            </q-input>
+
+            <q-btn label="Submit" color="primary" type="submit" />
+          </q-form>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
-import { useRoute } from "vue-router";
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { useUserStore } from "stores/user";
 import { storeToRefs } from "pinia";
 import DirectionViewer from "@/components/DirectionViewer.vue";
 import useFormatter from "@/composables/useFormatter";
+import { useQuasar } from "quasar";
 
+const $q = useQuasar();
 const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
-const { getListings } = storeToRefs(userStore);
+const { getListings, getUser } = storeToRefs(userStore);
+
+const is_owner = computed(() => {
+  return getUser.value?.user_type == "owner";
+});
 
 const { formatCurrency } = useFormatter();
+
+const slide = ref(1);
+
+const bookingModal = ref(false);
+const form_ref = ref();
+const bookingForm = ref({
+  date: null,
+  time: null,
+});
 
 const listing = ref({
   title: "Listing Title",
   location: "Listing Location",
   img: "https://via.placeholder.com/400",
+  business_permit_img: "https://picsum.photos/id/1015/200/200",
+  other_images: [
+    "https://picsum.photos/id/1015/200/200",
+    "https://picsum.photos/id/1017/200/200",
+  ],
   host: {
     name: "Host Name",
     avatar: "https://via.placeholder.com/50",
@@ -108,12 +226,38 @@ function displayMaps() {
   console.log("Contacting host...");
 }
 
+function initBooking() {
+  bookingForm.value = {
+    date: null,
+    time: null,
+  };
+  bookingModal.value = !bookingModal.value;
+}
+
+async function submitBooking() {
+  console.log("submitBooking", bookingForm.value);
+  const data = await userStore.submitBooking({
+    listing_id: listing.value.id,
+    ...bookingForm.value,
+  });
+  console.log("submitBooking", data);
+  $q.notify({
+    message: "Booking Submitted",
+    color: "green",
+  });
+  initBooking();
+}
+
 onMounted(() => {
   console.log("route", route.params);
   console.log("getListings", getListings.value);
   listing.value = getListings.value.find(
     (x) => x.id == route.params.property_id
   );
+
+  if (!listing.value) router.push("/");
+
+  console.log(getUser.value.email === listing.value.user);
 });
 </script>
 

@@ -50,7 +50,10 @@ function initMap() {
   var directionsRenderer = new google.maps.DirectionsRenderer();
   var map = new google.maps.Map(document.getElementById("map"), {
     zoom: 7,
-    center: { lat: 8.9538327, lng: 125.529305 }, // Default center
+    center: {
+      lat: 8.9538327,
+      lng: 125.529305,
+    },
   });
   directionsRenderer.setMap(map);
 
@@ -95,7 +98,8 @@ function calculateAndDisplayRoute(directionsService, directionsRenderer) {
           destination: end,
           // origin: "Chicago, IL",
           // destination: "Los Angeles, CA",
-          travelMode: "DRIVING",
+          // travelMode: "DRIVING",
+          travelMode: google.maps.TravelMode.DRIVING,
         },
         function (response, status) {
           if (status === "OK") {

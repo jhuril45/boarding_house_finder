@@ -33,6 +33,17 @@
               type="password"
               :rules="passwordRules"
             />
+            <q-select
+              v-model="formData.user_type"
+              label="User Type"
+              dense
+              outlined
+              placeholder="Select User Type"
+              type="select"
+              behavior="menu"
+              :options="['Owner', 'Student']"
+              class="q-mb-md"
+            />
             <q-btn
               type="submit"
               color="primary"
@@ -46,7 +57,7 @@
             <q-card-actions align="center">
               <span class="text-caption">Dont have an account yet?</span>
               <q-btn
-                to="/auth/register"
+                to="/auth"
                 color="primary"
                 label="Create Account"
                 flat
@@ -64,6 +75,8 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "stores/user";
+import { useRoute } from "vue-router";
+const route = useRoute();
 
 const userStore = useUserStore();
 
@@ -72,6 +85,7 @@ const router = useRouter();
 const formData = ref({
   email: "test@gmail.com",
   password: "password",
+  user_type: "Owner",
 });
 
 const emailRules = ref([
@@ -89,6 +103,7 @@ async function submitForm() {
   await userStore.login({
     email: formData.value.email,
     password: formData.value.password,
+    user_type: formData.value.user_type.toLowerCase(),
   });
   router.push("/home");
 }

@@ -94,6 +94,7 @@ const initMap = () => {
       });
     }
   });
+
   observer.observe(map.value, {
     attributes: true,
     childList: true,
@@ -102,16 +103,9 @@ const initMap = () => {
 };
 
 onMounted(() => {
-  // Load Google Maps API
   selected_location.value = JSON.parse(JSON.stringify(location.value));
   setTimeout(() => {
     initMap();
   }, 1000);
-  // const script = document.createElement("script");
-  // script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY`;
-  // script.async = true;
-  // script.defer = true;
-  // script.onload = initMap;
-  // document.head.appendChild(script);
 });
 </script>

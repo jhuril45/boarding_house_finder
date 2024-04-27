@@ -1,3 +1,4 @@
+import axios from "axios";
 import { defineStore } from "pinia";
 
 export const useUserStore = defineStore("counter", {
@@ -13,6 +14,11 @@ export const useUserStore = defineStore("counter", {
       {
         id: 1,
         img: "https://picsum.photos/id/1015/200/200",
+        business_permit_img: "https://picsum.photos/id/1015/200/200",
+        other_images: [
+          "https://picsum.photos/id/1015/200/200",
+          "https://picsum.photos/id/1017/200/200",
+        ],
         title: "Beautiful Property 1",
         description: "Lorem ipsum dolor sit amet",
         location: {
@@ -22,12 +28,17 @@ export const useUserStore = defineStore("counter", {
           longitude: 125.529305,
         },
         price: 100,
-        user: "test@example.com",
+        user: "test@gmail.com",
         contact_number: "09123456789",
       },
       {
         id: 2,
         img: "https://picsum.photos/id/1016/200/200",
+        business_permit_img: "https://picsum.photos/id/1015/200/200",
+        other_images: [
+          "https://picsum.photos/id/1015/200/200",
+          "https://picsum.photos/id/1017/200/200",
+        ],
         title: "Stunning Property 2",
         description: "Sed ut perspiciatis unde",
         location: {
@@ -43,6 +54,11 @@ export const useUserStore = defineStore("counter", {
       {
         id: 3,
         img: "https://picsum.photos/id/1018/200/200",
+        business_permit_img: "https://picsum.photos/id/1015/200/200",
+        other_images: [
+          "https://picsum.photos/id/1015/200/200",
+          "https://picsum.photos/id/1017/200/200",
+        ],
         title: "Modern Property 3",
         description: "Neque porro quisquam est",
         location: {
@@ -56,6 +72,7 @@ export const useUserStore = defineStore("counter", {
         contact_number: "09123456789",
       },
     ],
+    bookings: [],
   }),
 
   getters: {
@@ -67,6 +84,12 @@ export const useUserStore = defineStore("counter", {
     },
     getUserLocation(state) {
       return state.location;
+    },
+    getMyListings(state) {
+      return state.listings.filter((x) => x.user === state.user?.email);
+    },
+    getMyBookings(state) {
+      return state.bookings.filter((x) => x.user === state.user?.email);
     },
   },
 
@@ -145,12 +168,51 @@ export const useUserStore = defineStore("counter", {
     async submitListing(data) {
       return new Promise(async (resolve, reject) => {
         try {
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
           this.listings.unshift({
             ...data,
             id: this.listings.length + 1,
-            user: "test@example.com",
+            user: this.user.email,
           });
           resolve(this.listings);
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+    async submitBooking(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
+          this.bookings.unshift({
+            ...data,
+            id: this.bookings.length + 1,
+            user: this.user.email,
+          });
+          resolve(this.bookings);
         } catch (error) {
           console.log("login error", error);
           resolve();
