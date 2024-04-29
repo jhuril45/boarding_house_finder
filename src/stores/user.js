@@ -72,7 +72,16 @@ export const useUserStore = defineStore("counter", {
         contact_number: "09123456789",
       },
     ],
-    bookings: [],
+    bookings: [
+      {
+        listing_id: 1,
+        date: "2024/04/17",
+        time: "05:25",
+        id: 1,
+        user: "test@gmail.com",
+        status: "declined",
+      },
+    ],
   }),
 
   getters: {
@@ -195,6 +204,7 @@ export const useUserStore = defineStore("counter", {
     async submitBooking(data) {
       return new Promise(async (resolve, reject) => {
         try {
+          console.log("submitBooking", data);
           const formData = new FormData();
           Object.keys(data).forEach((key) => {
             formData.append(key, data[key]);
@@ -211,6 +221,87 @@ export const useUserStore = defineStore("counter", {
             ...data,
             id: this.bookings.length + 1,
             user: this.user.email,
+          });
+          resolve(this.bookings);
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+    async removeBooking(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log("submitBooking", data);
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
+          const index = this.bookings.findIndex((x) => x.id === data.id);
+          this.bookings.splice(index, 1);
+          resolve(this.bookings);
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+    async approveBooking(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log("approveBooking", data);
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
+          const index = this.bookings.findIndex((x) => x.id === data.id);
+          this.bookings.splice(index, 1, {
+            ...this.bookings[index],
+            status: "approved",
+          });
+          resolve(this.bookings);
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+    async declineBooking(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log("declineBooking", data);
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
+          const index = this.bookings.findIndex((x) => x.id === data.id);
+          this.bookings.splice(index, 1, {
+            ...this.bookings[index],
+            status: "declined",
           });
           resolve(this.bookings);
         } catch (error) {

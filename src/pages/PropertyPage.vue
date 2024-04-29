@@ -29,6 +29,21 @@
       <q-card-section class="host-section q-pb-sm">
         <q-card-title>
           <div class="host-name">{{ listing.title }}</div>
+          <div class="property-title q-mt-sm" v-if="booking && !is_owner">
+            Booked on
+            {{ formatDateDisplay(new Date(booking.date + " " + booking.time)) }}
+            <span
+              :class="
+                'text-capitalize ' +
+                (booking.status == 'approved'
+                  ? 'text-green'
+                  : booking.status == 'pending'
+                  ? 'text-warning'
+                  : 'text-red')
+              "
+              >({{ booking.status }})</span
+            >
+          </div>
         </q-card-title>
       </q-card-section>
 
@@ -69,7 +84,25 @@
         <q-page-sticky>
           <div class="q-pa-lg row">
             <div class="q-pa-xs" v-if="!is_owner">
-              <q-btn label="Book " color="primary" @click="initBooking" />
+              <q-btn
+                v-if="booking && booking.status === 'pending'"
+                label="Remove Booking"
+                color="primary"
+                @click="removeBooking()"
+              />
+              <q-btn
+                v-else
+                label="Book"
+                color="primary"
+                @click="initBooking()"
+              />
+            </div>
+            <div class="q-pa-xs" v-else-if="booking_list.length">
+              <q-btn
+                :label="'Bookings (' + booking_list.length + ')'"
+                color="primary"
+                @click="viewBookingList()"
+              />
             </div>
             <div class="q-pa-xs">
               <q-btn
@@ -161,6 +194,56 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <q-dialog v-model="bookingListModal" maximized>
+      <q-card style="min-width: 100vw">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Booking List</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section>
+          <q-list>
+            <q-item v-for="item in booking_list" :key="'booking-' + item.id">
+              <q-item-section>
+                <q-item-label>{{ item.user }}</q-item-label>
+                <q-item-label caption lines="2">
+                  {{ formatDateDisplay(new Date(item.date + " " + item.time)) }}
+                </q-item-label>
+              </q-item-section>
+
+              <q-item-section side top>
+                <div class="row q-gutter-x-md" v-if="item.status === 'pending'">
+                  <q-btn
+                    size="xs"
+                    color="primary"
+                    icon="check"
+                    @click="approveBooking(item.id)"
+                  />
+
+                  <q-btn
+                    size="xs"
+                    color="red"
+                    icon="close"
+                    @click="declineBooking(item.id)"
+                  />
+                </div>
+                <div
+                  :class="
+                    'text-capitalize ' +
+                    (item.status == 'approved' ? 'text-green' : 'text-red')
+                  "
+                  v-else
+                >
+                  {{ item.status }}
+                </div>
+              </q-item-section>
+            </q-item>
+          </q-list>
+        </q-card-section>
+      </q-card>
+    </q-dialog>
   </q-page>
 </template>
 
@@ -177,17 +260,30 @@ const $q = useQuasar();
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
-const { getListings, getUser } = storeToRefs(userStore);
+const { getListings, getUser, getMyBookings } = storeToRefs(userStore);
 
 const is_owner = computed(() => {
   return getUser.value?.user_type == "owner";
 });
 
-const { formatCurrency } = useFormatter();
+const booking = computed(() => {
+  return getMyBookings.value.find(
+    (x) => x.listing_id == route.params.property_id
+  );
+});
+
+const booking_list = computed(() => {
+  return getMyBookings.value.filter(
+    (x) => x.listing_id == route.params.property_id
+  );
+});
+
+const { formatCurrency, formatDateDisplay } = useFormatter();
 
 const slide = ref(1);
 
 const bookingModal = ref(false);
+const bookingListModal = ref(false);
 const form_ref = ref();
 const bookingForm = ref({
   date: null,
@@ -234,11 +330,16 @@ function initBooking() {
   bookingModal.value = !bookingModal.value;
 }
 
+function viewBookingList() {
+  bookingListModal.value = true;
+}
+
 async function submitBooking() {
   console.log("submitBooking", bookingForm.value);
   const data = await userStore.submitBooking({
     listing_id: listing.value.id,
     ...bookingForm.value,
+    status: "pending",
   });
   console.log("submitBooking", data);
   $q.notify({
@@ -246,6 +347,42 @@ async function submitBooking() {
     color: "green",
   });
   initBooking();
+}
+
+async function removeBooking() {
+  console.log("removeBooking", booking.value);
+  const data = await userStore.removeBooking({
+    ...booking.value,
+  });
+  console.log("removeBooking", data);
+  $q.notify({
+    message: "Booking Removed",
+    color: "green",
+  });
+}
+
+async function approveBooking() {
+  console.log("approveBooking", booking.value);
+  const data = await userStore.approveBooking({
+    ...booking.value,
+  });
+  console.log("approveBooking", data);
+  $q.notify({
+    message: "Booking Removed",
+    color: "green",
+  });
+}
+
+async function declineBooking() {
+  console.log("declineBooking", booking.value);
+  const data = await userStore.declineBooking({
+    ...booking.value,
+  });
+  console.log("declineBooking", data);
+  $q.notify({
+    message: "Booking Removed",
+    color: "green",
+  });
 }
 
 onMounted(() => {
@@ -257,7 +394,7 @@ onMounted(() => {
 
   if (!listing.value) router.push("/");
 
-  console.log(getUser.value.email === listing.value.user);
+  console.log("booking", booking.value);
 });
 </script>
 
