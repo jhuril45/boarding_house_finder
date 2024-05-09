@@ -2,11 +2,7 @@
   <q-page class="signup-page">
     <div class="signup-container">
       <!-- Placeholder for the image -->
-      <img
-        src="https://via.placeholder.com/300x100"
-        alt="Create Account"
-        class="signup-image"
-      />
+      <img src="~assets/auth.svg" alt="Create Account" class="signup-image" />
 
       <q-card class="signup-form-card" flat>
         <q-card-section>

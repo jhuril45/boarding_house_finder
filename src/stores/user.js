@@ -13,11 +13,12 @@ export const useUserStore = defineStore("counter", {
     listings: [
       {
         id: 1,
-        img: "https://picsum.photos/id/1015/200/200",
-        business_permit_img: "https://picsum.photos/id/1015/200/200",
+        img: "/images/bhouse1.jpg",
+        business_permit_img: "images/bpermit.jpg",
         other_images: [
-          "https://picsum.photos/id/1015/200/200",
-          "https://picsum.photos/id/1017/200/200",
+          "/images/bhouse1-1.jpg",
+          "/images/bhouse1-2.jpg",
+          "/images/bhouse1-3.jpg",
         ],
         title: "Beautiful Property 1",
         description: "Lorem ipsum dolor sit amet",
@@ -33,11 +34,12 @@ export const useUserStore = defineStore("counter", {
       },
       {
         id: 2,
-        img: "https://picsum.photos/id/1016/200/200",
-        business_permit_img: "https://picsum.photos/id/1015/200/200",
+        img: "images/bhouse2.jpg",
+        business_permit_img: "images/bpermit.jpg",
         other_images: [
-          "https://picsum.photos/id/1015/200/200",
-          "https://picsum.photos/id/1017/200/200",
+          "/images/bhouse2-1.jpg",
+          "/images/bhouse2-2.jpg",
+          "/images/bhouse2-3.jpg",
         ],
         title: "Stunning Property 2",
         description: "Sed ut perspiciatis unde",
@@ -53,11 +55,12 @@ export const useUserStore = defineStore("counter", {
       },
       {
         id: 3,
-        img: "https://picsum.photos/id/1018/200/200",
-        business_permit_img: "https://picsum.photos/id/1015/200/200",
+        img: "images/bhouse3.jpg",
+        business_permit_img: "images/bpermit.jpg",
         other_images: [
-          "https://picsum.photos/id/1015/200/200",
-          "https://picsum.photos/id/1017/200/200",
+          "/images/bhouse3-1.jpg",
+          "/images/bhouse3-2.jpg",
+          "/images/bhouse3-3.jpg",
         ],
         title: "Modern Property 3",
         description: "Neque porro quisquam est",
@@ -73,14 +76,14 @@ export const useUserStore = defineStore("counter", {
       },
     ],
     bookings: [
-      {
-        listing_id: 1,
-        date: "2024/04/17",
-        time: "05:25",
-        id: 1,
-        user: "test@gmail.com",
-        status: "declined",
-      },
+      // {
+      //   listing_id: 1,
+      //   date: "2024/04/17",
+      //   time: "05:25",
+      //   id: 1,
+      //   user: "test@gmail.com",
+      //   status: "declined",
+      // },
     ],
   }),
 
@@ -194,6 +197,39 @@ export const useUserStore = defineStore("counter", {
             id: this.listings.length + 1,
             user: this.user.email,
           });
+          resolve(this.listings);
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+    async removeListing(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log("removeListing", data);
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
+          const index = this.listings.findIndex((x) => x.id === data.id);
+          this.listings.splice(index, 1);
+          const arr = [];
+          this.bookings.map((x, index) => {
+            if (x.listing_id !== data.id) {
+              arr.push(x);
+            }
+          });
+
+          this.bookings = arr;
           resolve(this.listings);
         } catch (error) {
           console.log("login error", error);

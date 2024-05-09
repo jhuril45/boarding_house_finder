@@ -35,7 +35,7 @@
             <span
               :class="
                 'text-capitalize ' +
-                (booking.status == 'approved'
+                (booking.status == 'booked'
                   ? 'text-green'
                   : booking.status == 'pending'
                   ? 'text-warning'
@@ -91,7 +91,7 @@
                 @click="removeBooking()"
               />
               <q-btn
-                v-else
+                v-else-if="!booking"
                 label="Book"
                 color="primary"
                 @click="initBooking()"
@@ -106,9 +106,9 @@
             </div>
             <div class="q-pa-xs">
               <q-btn
-                label="Edit "
-                color="primary"
-                @click="displayMaps"
+                label="Remove"
+                color="red"
+                @click="removeListing()"
                 v-if="is_owner && getUser.email == listing.user"
               />
             </div>
@@ -232,7 +232,7 @@
                 <div
                   :class="
                     'text-capitalize ' +
-                    (item.status == 'approved' ? 'text-green' : 'text-red')
+                    (item.status == 'booked' ? 'text-green' : 'text-red')
                   "
                   v-else
                 >
@@ -334,12 +334,25 @@ function viewBookingList() {
   bookingListModal.value = true;
 }
 
+async function removeListing() {
+  console.log("removeListing", listing.value);
+  const data = await userStore.removeListing({
+    ...listing.value,
+  });
+  console.log("removeListing", data);
+  $q.notify({
+    message: "Listing Removed",
+    color: "green",
+  });
+  router.push("/");
+}
+
 async function submitBooking() {
   console.log("submitBooking", bookingForm.value);
   const data = await userStore.submitBooking({
     listing_id: listing.value.id,
     ...bookingForm.value,
-    status: "pending",
+    status: "booked",
   });
   console.log("submitBooking", data);
   $q.notify({

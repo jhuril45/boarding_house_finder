@@ -39,7 +39,27 @@
                       width="250px"
                     />
                     <div class="property-content">
-                      <div class="property-title">{{ property.title }}</div>
+                      <div class="property-title">
+                        {{ property.title }}
+                        <span
+                          class="property-subtitle"
+                          :class="
+                            getMyBookings.findIndex(
+                              (x) => x.listing_id === property.id
+                            ) >= 0
+                              ? 'text-red'
+                              : ''
+                          "
+                        >
+                          ({{
+                            getMyBookings.findIndex(
+                              (x) => x.listing_id === property.id
+                            ) >= 0
+                              ? "Booked"
+                              : ""
+                          }})
+                        </span>
+                      </div>
                       <div class="property-subtitle">
                         {{ formatCurrency(property.price) + "/Month" }}
                       </div>
@@ -104,7 +124,8 @@ const { formatCurrency } = useFormatter();
 const searchQuery = ref("");
 
 const userStore = useUserStore();
-const { getUser, getListings, getMyListings } = storeToRefs(userStore);
+const { getUser, getListings, getMyListings, getMyBookings } =
+  storeToRefs(userStore);
 
 const is_owner = computed(() => {
   return getUser.value?.user_type == "owner";

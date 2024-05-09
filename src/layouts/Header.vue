@@ -11,7 +11,7 @@
         v-if="getUser"
       />
 
-      <q-toolbar-title> App Name </q-toolbar-title>
+      <q-toolbar-title> Boarding House Finder </q-toolbar-title>
 
       <div>v {{ app_version }}</div>
     </q-toolbar>
