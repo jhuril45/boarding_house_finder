@@ -18,7 +18,6 @@
         :key="'other-img-' + index"
         :name="parseInt(index + 1)"
         v-for="(img, index) in [listing.img, ...listing.other_images]"
-        :img-src="img"
       >
         <q-img :src="img" style="height: 300px; object-fit: cover" />
       </q-carousel-slide>
@@ -44,21 +43,46 @@
               >({{ booking.status }})</span
             >
           </div>
+          <div class="property-title q-mt-sm">
+            <span
+              :class="
+                'text-capitalize ' +
+                (listing.status == 'full'
+                  ? 'text-green'
+                  : listing.status == 'available'
+                  ? 'text-warning'
+                  : 'text-red')
+              "
+              >({{ listing.status }})</span
+            >
+          </div>
         </q-card-title>
       </q-card-section>
 
       <q-card-section class="details-section">
         <div class="detail-item">
           <q-icon name="local_offer" /> Price:
-          <span class="detail-value">{{ formatCurrency(listing.price) }}</span>
+          <span class="detail-value">
+            {{ formatCurrency(listing.price) }} / Month
+          </span>
+        </div>
+        <div class="detail-item">
+          <q-icon name="person" /> Max Person:
+          <span class="detail-value">
+            {{ listing.person_per_room }}
+          </span>
         </div>
         <div class="detail-item">
           <q-icon name="phone" /> Contact Number:
-          <span class="detail-value">{{ listing.contact_number }}</span>
+          <span class="detail-value">
+            {{ listing.contact_number }}
+          </span>
         </div>
         <div class="detail-item">
           <q-icon name="email" /> Email:
-          <span class="detail-value">{{ listing.user }}</span>
+          <span class="detail-value">
+            {{ listing.user }}
+          </span>
         </div>
         <!-- Add more details as needed -->
       </q-card-section>
@@ -91,7 +115,7 @@
                 @click="removeBooking()"
               />
               <q-btn
-                v-else-if="!booking"
+                v-else-if="!booking && listing.status === 'available'"
                 label="Book"
                 color="primary"
                 @click="initBooking()"
@@ -104,13 +128,21 @@
                 @click="viewBookingList()"
               />
             </div>
-            <div class="q-pa-xs">
+            <div
+              class="q-pa-xs"
+              v-if="is_owner && getUser.email == listing.user"
+            >
               <q-btn
-                label="Remove"
-                color="red"
-                @click="removeListing()"
-                v-if="is_owner && getUser.email == listing.user"
+                label="Set as Full"
+                color="warning"
+                @click="setFullListing()"
               />
+            </div>
+            <div
+              class="q-pa-xs"
+              v-if="is_owner && getUser.email == listing.user"
+            >
+              <q-btn label="Remove" color="red" @click="removeListing()" />
             </div>
             <div class="q-pa-xs">
               <q-btn label="Location" color="primary" @click="displayMaps" />
@@ -313,6 +345,7 @@ const listing = ref({
     latitude: 8.9538327,
     longitude: 125.529305,
   },
+  person_per_room: 2,
 });
 
 const location_modal = ref(false);
@@ -345,6 +378,19 @@ async function removeListing() {
     color: "green",
   });
   router.push("/");
+}
+
+async function setFullListing() {
+  console.log("setFullListing", listing.value);
+  const data = await userStore.setFullListing({
+    ...listing.value,
+  });
+  console.log("setFullListing", data);
+  $q.notify({
+    message: "Listing set to Full",
+    color: "green",
+  });
+  getListing();
 }
 
 async function submitBooking() {
@@ -398,13 +444,16 @@ async function declineBooking() {
   });
 }
 
-onMounted(() => {
-  console.log("route", route.params);
-  console.log("getListings", getListings.value);
+async function getListing() {
   listing.value = getListings.value.find(
     (x) => x.id == route.params.property_id
   );
+}
 
+onMounted(() => {
+  console.log("route", route.params);
+  console.log("getListings", getListings.value);
+  getListing();
   if (!listing.value) router.push("/");
 
   console.log("booking", booking.value);

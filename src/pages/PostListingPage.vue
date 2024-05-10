@@ -41,6 +41,18 @@
         <q-card-section>
           <q-input
             outlined
+            type="number"
+            label="Max Person"
+            v-model="form.person_per_room"
+            placeholder="Enter Max Person"
+            :rules="[(val) => !!val || 'Invalid Max Person']"
+            hide-bottom-space
+          />
+        </q-card-section>
+
+        <q-card-section>
+          <q-input
+            outlined
             label="Description"
             v-model="form.description"
             placeholder="Enter description"
@@ -254,6 +266,7 @@ const form = ref({
   business_permit_img: null,
   business_permit: null,
   other_images: [],
+  person_per_room: null,
 });
 
 const location = ref(null);
@@ -313,7 +326,10 @@ function onLocationSelected(location) {
 
 async function submitListing() {
   console.log("submitListing", form.value);
-  const data = await userStore.submitListing(form.value);
+  const data = await userStore.submitListing({
+    ...form.value,
+    status: "available",
+  });
   console.log("submitListing", data);
   $q.notify({
     message: "Success",

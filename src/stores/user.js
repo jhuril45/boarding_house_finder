@@ -31,6 +31,8 @@ export const useUserStore = defineStore("counter", {
         price: 100,
         user: "test@gmail.com",
         contact_number: "09123456789",
+        person_per_room: 2,
+        status: "available",
       },
       {
         id: 2,
@@ -52,6 +54,8 @@ export const useUserStore = defineStore("counter", {
         price: 100,
         user: "test@example.com",
         contact_number: "09123456789",
+        person_per_room: 2,
+        status: "available",
       },
       {
         id: 3,
@@ -73,6 +77,8 @@ export const useUserStore = defineStore("counter", {
         price: 100,
         user: "test@example.com",
         contact_number: "09123456789",
+        person_per_room: 2,
+        status: "available",
       },
     ],
     bookings: [
@@ -340,6 +346,34 @@ export const useUserStore = defineStore("counter", {
             status: "declined",
           });
           resolve(this.bookings);
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+    async setFullListing(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log("setFullListing", data);
+          const formData = new FormData();
+          Object.keys(data).forEach((key) => {
+            formData.append(key, data[key]);
+          });
+          // await axios
+          //   .post("api/listing", data)
+          //   .then(function (response) {
+          //     resolve(response.data);
+          //   })
+          //   .catch(function (error) {
+          //     reject(error);
+          //   });
+          const index = this.listings.findIndex((x) => x.id === data.id);
+          this.listings.splice(index, 1, {
+            ...this.listings[index],
+            status: "full",
+          });
+          resolve(this.listings);
         } catch (error) {
           console.log("login error", error);
           resolve();

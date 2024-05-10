@@ -41,23 +41,20 @@
                     <div class="property-content">
                       <div class="property-title">
                         {{ property.title }}
+                      </div>
+                      <div class="q-mb-xs">
                         <span
                           class="property-subtitle"
                           :class="
-                            getMyBookings.findIndex(
-                              (x) => x.listing_id === property.id
-                            ) >= 0
-                              ? 'text-red'
-                              : ''
+                            'text-capitalize ' +
+                            (property.status == 'full'
+                              ? 'text-green'
+                              : property.status == 'available'
+                              ? 'text-warning'
+                              : 'text-red')
                           "
                         >
-                          ({{
-                            getMyBookings.findIndex(
-                              (x) => x.listing_id === property.id
-                            ) >= 0
-                              ? "Booked"
-                              : ""
-                          }})
+                          {{ property.status }}
                         </span>
                       </div>
                       <div class="property-subtitle">
@@ -97,6 +94,21 @@
                     <q-item-section class="q-px-sm">
                       <q-item-label lines="1">
                         <div class="property-title">{{ property.title }}</div>
+                        <div class="q-mb-xs">
+                          <span
+                            class="property-subtitle"
+                            :class="
+                              'text-capitalize ' +
+                              (property.status == 'full'
+                                ? 'text-green'
+                                : property.status == 'available'
+                                ? 'text-warning'
+                                : 'text-red')
+                            "
+                          >
+                            {{ property.status }}
+                          </span>
+                        </div>
                         <div class="property-subtitle">
                           {{ formatCurrency(property.price) + "/Month" }}
                         </div>
