@@ -195,7 +195,7 @@
                 transition-show="scale"
                 transition-hide="scale"
               >
-                <q-date v-model="bookingForm.date">
+                <q-date v-model="bookingForm.date" :options="dateOptions">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -213,7 +213,7 @@
                 transition-show="scale"
                 transition-hide="scale"
               >
-                <q-time v-model="bookingForm.time">
+                <q-time v-model="bookingForm.time" :options="hourOptions">
                   <div class="row items-center justify-end">
                     <q-btn v-close-popup label="Close" color="primary" flat />
                   </div>
@@ -221,7 +221,23 @@
               </q-popup-proxy>
             </q-input>
 
-            <q-btn label="Submit" color="primary" type="submit" />
+            <div class="q-px-sm">
+              <div class="text-bold">Terms and Agreements</div>
+              Owner agrees to rent to the Tenant, and the Tenant agrees to rent
+              from Owner, the premises located at the said address, including
+              the room designated, along with shared common areas as described
+              on our app.
+            </div>
+            <q-checkbox v-model="booking_terms" label="Terms and Agreements" />
+            <div class="q-mt-lg">
+              <q-btn
+                class="q-mt-2"
+                label="Submit"
+                color="primary"
+                type="submit"
+                :disabled="!booking_terms"
+              />
+            </div>
           </q-form>
         </q-card-section>
       </q-card>
@@ -287,6 +303,7 @@ import { storeToRefs } from "pinia";
 import DirectionViewer from "@/components/DirectionViewer.vue";
 import useFormatter from "@/composables/useFormatter";
 import { useQuasar } from "quasar";
+import { date } from "quasar";
 
 const $q = useQuasar();
 const route = useRoute();
@@ -299,6 +316,7 @@ const is_owner = computed(() => {
 });
 
 const booking = computed(() => {
+  return null;
   return getMyBookings.value.find(
     (x) => x.listing_id == route.params.property_id
   );
@@ -321,6 +339,8 @@ const bookingForm = ref({
   date: null,
   time: null,
 });
+
+const booking_terms = ref(false);
 
 const listing = ref({
   title: "Listing Title",
@@ -360,6 +380,7 @@ function initBooking() {
     date: null,
     time: null,
   };
+  booking_terms.value = false;
   bookingModal.value = !bookingModal.value;
 }
 
@@ -394,18 +415,56 @@ async function setFullListing() {
 }
 
 async function submitBooking() {
-  console.log("submitBooking", bookingForm.value);
-  const data = await userStore.submitBooking({
-    listing_id: listing.value.id,
-    ...bookingForm.value,
-    status: "booked",
-  });
-  console.log("submitBooking", data);
-  $q.notify({
-    message: "Booking Submitted",
-    color: "green",
-  });
-  initBooking();
+  try {
+    if (!booking_terms.value) {
+      $q.notify({
+        type: "negative",
+        message: "User must agree to the terms and condition.",
+      });
+
+      return;
+    }
+    console.log("submitBooking", bookingForm.value);
+    const booking_date = new Date(
+      bookingForm.value.date + " " + bookingForm.value.time
+    );
+    console.log("booking_date", booking_date);
+    const data = await userStore.submitBooking({
+      listing_id: listing.value.id,
+      ...bookingForm.value,
+      status: "booked",
+      booking_date: new Date(
+        bookingForm.value.date + " " + bookingForm.value.time
+      ),
+    });
+    console.log("submitBooking", data);
+    $q.notify({
+      message: "Booking Submitted",
+      color: "green",
+    });
+    initBooking();
+  } catch (error) {
+    console.log("error", error);
+    $q.notify({
+      message: error.error,
+      color: "negative",
+    });
+  }
+}
+
+function dateOptions(date_opt) {
+  const date_now = date.formatDate(new Date(), "YYYY-MM-DD");
+  const date_to = date.formatDate(date_opt, "YYYY-MM-DD");
+
+  return new Date(date_to).getTime() >= new Date(date_now).getTime();
+}
+
+function hourOptions(hr, min, sec) {
+  const hr_now = date.formatDate(new Date(), "HH");
+  const mm_now = date.formatDate(new Date(), "HH");
+  const total_time_now = parseInt(hr_now) * 60 + parseInt(mm_now);
+  const total_time = parseInt(hr) * 60 + parseInt(min || 0);
+  return true;
 }
 
 async function removeBooking() {

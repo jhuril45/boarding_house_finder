@@ -247,27 +247,37 @@ export const useUserStore = defineStore("counter", {
       return new Promise(async (resolve, reject) => {
         try {
           console.log("submitBooking", data);
-          const formData = new FormData();
-          Object.keys(data).forEach((key) => {
-            formData.append(key, data[key]);
-          });
-          // await axios
-          //   .post("api/listing", data)
-          //   .then(function (response) {
-          //     resolve(response.data);
-          //   })
-          //   .catch(function (error) {
-          //     reject(error);
-          //   });
-          this.bookings.unshift({
-            ...data,
-            id: this.bookings.length + 1,
-            user: this.user.email,
-          });
-          resolve(this.bookings);
+          const booking_check = this.bookings.find(
+            (x) => x.date == data.date && x.time == data.time
+          );
+          console.log("booking_check", booking_check);
+          if (booking_check) {
+            reject({
+              error: "Date already have scheduled Booking",
+            });
+          } else {
+            const formData = new FormData();
+            Object.keys(data).forEach((key) => {
+              formData.append(key, data[key]);
+            });
+            // await axios
+            //   .post("api/listing", data)
+            //   .then(function (response) {
+            //     resolve(response.data);
+            //   })
+            //   .catch(function (error) {
+            //     reject(error);
+            //   });
+            this.bookings.unshift({
+              ...data,
+              id: this.bookings.length + 1,
+              user: this.user.email,
+            });
+            resolve(this.bookings);
+          }
         } catch (error) {
           console.log("login error", error);
-          resolve();
+          reject(error);
         }
       });
     },
