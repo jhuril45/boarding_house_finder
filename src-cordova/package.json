@@ -1,5 +1,5 @@
 {
-  "name": "com.boardinghousefinder.app",
+  "name": "boarding.house.finder",
   "displayName": "Boarding House Finder",
   "version": "1.0.0",
   "description": "A sample Apache Cordova application that responds to the deviceready event.",
@@ -13,25 +13,27 @@
   "author": "Apache Cordova Team",
   "license": "Apache-2.0",
   "devDependencies": {
-    "cordova-android": "^10.1.2",
+    "cordova-android": "^12.0.1",
     "cordova-plugin-android-permissions": "^1.1.5",
-    "cordova-plugin-camera": "^6.0.0",
-    "cordova-plugin-file": "^7.0.0",
+    "cordova-plugin-camera": "^7.0.0",
+    "cordova-plugin-file": "^8.0.1",
     "cordova-plugin-geolocation": "^5.0.0",
-    "cordova-plugin-splashscreen": "^6.0.2"
+    "cordova-plugin-splashscreen": "^6.0.1"
   },
   "cordova": {
     "platforms": [
       "android"
     ],
     "plugins": {
-      "cordova-plugin-geolocation": {},
       "cordova-plugin-android-permissions": {},
       "cordova-plugin-camera": {
         "ANDROIDX_CORE_VERSION": "1.6.+"
       },
       "cordova-plugin-file": {
         "ANDROIDX_WEBKIT_VERSION": "1.4.0"
+      },
+      "cordova-plugin-geolocation": {
+        "GPS_REQUIRED": "true"
       },
       "cordova-plugin-splashscreen": {}
     }
