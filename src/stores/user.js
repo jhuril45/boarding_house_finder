@@ -248,7 +248,10 @@ export const useUserStore = defineStore("counter", {
         try {
           console.log("submitBooking", data);
           const booking_check = this.bookings.find(
-            (x) => x.date == data.date && x.time == data.time
+            (x) =>
+              x.date == data.date &&
+              x.time == data.time &&
+              x.listing_id == data.listing_id
           );
           console.log("booking_check", booking_check);
           if (booking_check) {
