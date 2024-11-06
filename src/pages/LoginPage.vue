@@ -29,7 +29,7 @@
               type="password"
               :rules="passwordRules"
             />
-            <q-select
+            <!-- <q-select
               v-model="formData.user_type"
               label="User Type"
               dense
@@ -39,8 +39,9 @@
               behavior="menu"
               :options="['Owner', 'Student']"
               class="q-mb-md"
-            />
+            /> -->
             <q-btn
+              :loading="loading"
               type="submit"
               color="primary"
               label="Login"
@@ -53,6 +54,7 @@
             <q-card-actions align="center">
               <span class="text-caption">Dont have an account yet?</span>
               <q-btn
+                :disabled="loading"
                 to="/auth"
                 color="primary"
                 label="Create Account"
@@ -72,7 +74,10 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "stores/user";
 import { useRoute } from "vue-router";
+import { useQuasar } from "quasar";
+
 const route = useRoute();
+const $q = useQuasar();
 
 const userStore = useUserStore();
 
@@ -83,6 +88,8 @@ const formData = ref({
   password: "password",
   user_type: "Owner",
 });
+
+const loading = ref(false);
 
 const emailRules = ref([
   (val) => !!val || "Email is required",
@@ -95,13 +102,23 @@ const passwordRules = ref([
 ]);
 
 async function submitForm() {
-  console.log("Form submitted:", formData.value);
-  await userStore.login({
-    email: formData.value.email,
-    password: formData.value.password,
-    user_type: formData.value.user_type.toLowerCase(),
-  });
-  router.push("/home");
+  try {
+    console.log("Form submitted:", formData.value);
+    loading.value = true;
+    await userStore.login({
+      email: formData.value.email,
+      password: formData.value.password,
+      // user_type: formData.value.user_type.toLowerCase(),
+    });
+    router.push("/home");
+  } catch (error) {
+    $q.notify({
+      message: error,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 

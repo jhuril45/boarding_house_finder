@@ -26,7 +26,7 @@
     <!-- Listing Details -->
     <q-card class="listing-card">
       <q-card-section class="host-section q-pb-sm">
-        <q-card-title>
+        <div>
           <div class="host-name">{{ listing.title }}</div>
           <div class="property-title q-mt-sm" v-if="booking && !is_owner">
             Booked on
@@ -56,7 +56,7 @@
               >({{ listing.status }})</span
             >
           </div>
-        </q-card-title>
+        </div>
       </q-card-section>
 
       <q-card-section class="details-section">
@@ -130,7 +130,7 @@
             </div>
             <div
               class="q-pa-xs"
-              v-if="is_owner && getUser.email == listing.user"
+              v-if="is_owner && getUser.get('email') == listing.user"
             >
               <q-btn
                 label="Set as Full"
@@ -140,7 +140,7 @@
             </div>
             <div
               class="q-pa-xs"
-              v-if="is_owner && getUser.email == listing.user"
+              v-if="is_owner && getUser.get('email') == listing.user"
             >
               <q-btn label="Remove" color="red" @click="removeListing()" />
             </div>
@@ -312,7 +312,7 @@ const userStore = useUserStore();
 const { getListings, getUser, getMyBookings } = storeToRefs(userStore);
 
 const is_owner = computed(() => {
-  return getUser.value?.user_type == "owner";
+  return getUser.value?.get("user_type") == "owner";
 });
 
 const booking = computed(() => {
@@ -332,6 +332,7 @@ const { formatCurrency, formatDateDisplay } = useFormatter();
 
 const slide = ref(1);
 
+const loading = ref(false);
 const bookingModal = ref(false);
 const bookingListModal = ref(false);
 const form_ref = ref();
@@ -389,16 +390,25 @@ function viewBookingList() {
 }
 
 async function removeListing() {
-  console.log("removeListing", listing.value);
-  const data = await userStore.removeListing({
-    ...listing.value,
-  });
-  console.log("removeListing", data);
-  $q.notify({
-    message: "Listing Removed",
-    color: "green",
-  });
-  router.push("/");
+  try {
+    if (this.loading) return;
+    loading.value = true;
+    console.log("removeListing", listing.value);
+    const data = await userStore.removeListing(listing.value);
+    console.log("removeListing", data);
+    $q.notify({
+      message: "Listing Removed",
+      color: "green",
+    });
+    router.push("/");
+  } catch (error) {
+    $q.notify({
+      message: error,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
 }
 
 async function setFullListing() {
@@ -504,9 +514,24 @@ async function declineBooking() {
 }
 
 async function getListing() {
-  listing.value = getListings.value.find(
-    (x) => x.id == route.params.property_id
-  );
+  try {
+    if (loading.value) return;
+    loading.value = true;
+
+    listing.value = getListings.value.find(
+      (x) => x.id == route.params.property_id
+    );
+    if (listing.value) loading.value = false;
+
+    listing.value = await userStore.getListingData(route.params.property_id);
+  } catch (error) {
+    $q.notify({
+      message: error,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
 }
 
 onMounted(() => {

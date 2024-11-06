@@ -60,9 +60,6 @@
                       <div class="property-subtitle">
                         {{ formatCurrency(property.price) + "/Month" }}
                       </div>
-                      <div class="property-subtitle">
-                        {{ property.description }}
-                      </div>
                     </div>
                   </div>
                 </q-item-label>

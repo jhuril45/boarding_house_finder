@@ -60,6 +60,8 @@ export default defineComponent({
     if (this.$q.platform.is.cordova) {
       this.requestLocationPermission();
     }
+    const userStore = useUserStore();
+    userStore.fetchListings();
 
     // const script = document.createElement("script");
     // script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyC4yLWq_DDK0EDdiiC3u6NsMrrlzVMSuz0`;

@@ -24,7 +24,7 @@
               label="Email"
               dense
               outlined
-              placeholder="Enter your email"
+              placeholder="Enter your email (username)"
               type="email"
               :rules="emailRules"
             />
@@ -59,6 +59,7 @@
               color="primary"
               label="Sign Up"
               class="btn-signup"
+              :loading="loading"
               dense
             />
           </q-form>
@@ -67,6 +68,7 @@
             <q-card-actions align="center">
               <span class="text-caption">Already have an account?</span>
               <q-btn
+                :disabled="loading"
                 to="/auth/login"
                 color="primary"
                 label="Sign In"
@@ -86,8 +88,10 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useUserStore } from "stores/user";
 import { useRoute } from "vue-router";
+import { useQuasar } from "quasar";
 
 const userStore = useUserStore();
+const $q = useQuasar();
 
 const router = useRouter();
 const route = useRoute();
@@ -101,6 +105,7 @@ const formData = ref({
   user_type: route.params.user_type,
 });
 
+const loading = ref(false);
 const nameRules = ref([(val) => !!val || "Name is required"]);
 
 const emailRules = ref([
@@ -124,9 +129,20 @@ const confirmPasswordRules = ref([
 ]);
 
 async function submitForm() {
-  console.log("Form submitted:", formData.value);
-  await userStore.register(formData.value);
-  router.push("/home");
+  try {
+    if (loading.value) return;
+    loading.value = true;
+    console.log("Form submitted:", formData.value);
+    await userStore.register(formData.value);
+    router.push("/home");
+  } catch (error) {
+    $q.notify({
+      message: error,
+      color: "red",
+    });
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 

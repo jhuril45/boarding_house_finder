@@ -1,7 +1,8 @@
+import { boot } from "quasar/wrappers";
 import { storeToRefs } from "pinia";
 import { useUserStore } from "stores/user";
 
-export default async ({ app, store, router, axios }) => {
+export default boot(async ({ app, store, router, axios }) => {
   window.RawFile = File;
 
   const userStore = useUserStore();
@@ -13,7 +14,6 @@ export default async ({ app, store, router, axios }) => {
    * Before each route update
    */
   router.beforeEach((to, from, next) => {
-    console.log("to:", to);
     if (to.matched.some((record) => record.meta.requiresAuth)) {
       if (!getUser.value) {
         next({
@@ -34,4 +34,4 @@ export default async ({ app, store, router, axios }) => {
       next(); // make sure to always call next()!
     }
   });
-};
+});

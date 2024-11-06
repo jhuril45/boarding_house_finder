@@ -71,19 +71,22 @@ const essentialLinks = computed(() => [
     title: "Listings",
     icon: "add",
     link: "/home",
-    is_show: getUser.value !== null && getUser.value.user_type == "student",
+    is_show:
+      getUser.value !== null && getUser.value.get("user_type") == "student",
   },
   {
     title: "My Bookings",
     icon: "add",
     link: "/bookings",
-    is_show: getUser.value !== null && getUser.value.user_type == "student",
+    is_show:
+      getUser.value !== null && getUser.value.get("user_type") == "student",
   },
   {
     title: "Post Listing",
     icon: "add",
     link: "/post-listing",
-    is_show: getUser.value !== null && getUser.value.user_type == "owner",
+    is_show:
+      getUser.value !== null && getUser.value.get("user_type") == "owner",
   },
 ]);
 

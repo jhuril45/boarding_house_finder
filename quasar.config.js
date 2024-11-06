@@ -76,7 +76,7 @@ module.exports = configure(function (/* ctx */) {
       // vitePlugins: [
       //   [ 'package-name', { ..options.. } ]
       // ]
-      https: true,
+      https: false,
       alias: {
         ["@"]: path.join(__dirname, "./src/"),
       },
