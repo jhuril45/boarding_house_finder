@@ -7,7 +7,7 @@
       <q-card class="signup-form-card" flat>
         <q-card-section>
           <div class="signup-header text-center">
-            <q-card-title class="text-h5">Login</q-card-title>
+            <div class="text-h5">Login</div>
           </div>
 
           <q-form @submit="submitForm">

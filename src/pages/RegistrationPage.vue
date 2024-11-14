@@ -7,7 +7,7 @@
       <q-card class="signup-form-card" flat>
         <q-card-section>
           <div class="signup-header text-center">
-            <q-card-title class="text-h5">Create an Account</q-card-title>
+            <div class="text-h5">Create an Account</div>
           </div>
 
           <q-form @submit="submitForm">
@@ -136,6 +136,7 @@ async function submitForm() {
     await userStore.register(formData.value);
     router.push("/home");
   } catch (error) {
+    console.log("error", error);
     $q.notify({
       message: error,
       color: "red",

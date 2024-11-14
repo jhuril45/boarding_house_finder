@@ -106,10 +106,10 @@ export const useUserStore = defineStore("counter", {
       return state.location;
     },
     getMyListings(state) {
-      return state.listings.filter((x) => x.user === state.user?.get("email"));
+      return state.listings.filter((x) => x.user === state.user);
     },
     getMyBookings(state) {
-      return state.bookings.filter((x) => x.user === state.user?.get("email"));
+      return state.bookings.filter((x) => x.get("user").id === state.user.id);
     },
   },
 
@@ -158,9 +158,17 @@ export const useUserStore = defineStore("counter", {
           user.set("contact_number", payload.contact_number);
           user.set("user_type", payload.user_type);
           user.set("name", payload.name);
+
+          const acl = new ParseObj.ACL();
+          acl.setPublicReadAccess(true); // Allow public read access
+
+          // Assign the ACL to the user object
+          user.setACL(acl);
+
           await user.signUp();
 
           this.user = ParseObj.User.current();
+          resolve(this.user);
         } catch (error) {
           console.log("login error", error.message);
           reject(error.message);
@@ -205,7 +213,6 @@ export const useUserStore = defineStore("counter", {
         id: val.id,
         img: val.get("img").url(),
         business_permit_img: val.get("business_permit_img").url(),
-        business_permit_img: "images/bpermit.jpg",
         other_images: other_images,
         title: val.get("title"),
         description: val.get("description"),
@@ -217,12 +224,19 @@ export const useUserStore = defineStore("counter", {
         status: val.get("status"),
         object: val,
       };
-      const index = this.listings.find((x) => x.id == obj.id);
+      const arr = this.listings;
+
+      console.log("this.listings", arr);
+      console.log("obj", obj);
+      const index = arr.findIndex((x) => x.id == obj.id);
+      console.log("index", index);
       if (index >= 0) {
-        this.listings.splice(1, index, obj);
+        arr[index] = obj;
       } else {
-        this.listings.push(obj);
+        arr.push(obj);
       }
+
+      this.listings = arr;
 
       return obj;
     },
@@ -281,7 +295,7 @@ export const useUserStore = defineStore("counter", {
         try {
           const parseQuery = ParseDB.parseQuery("Listing");
           parseQuery.include("user");
-          // parseQuery.include("business_permit_img.file");
+          parseQuery.include("business_permit_img.file");
           parseQuery.descending("createdAt");
           const listings = await parseQuery.find();
           console.log("fetchListings", listings);
@@ -301,6 +315,7 @@ export const useUserStore = defineStore("counter", {
         try {
           const parseQuery = ParseDB.parseQuery("Listing");
           parseQuery.include("user");
+          parseQuery.include("business_permit_img.file");
           parseQuery.equalTo("id", payload.id);
 
           const data = await parseQuery.first();
@@ -325,39 +340,59 @@ export const useUserStore = defineStore("counter", {
         }
       });
     },
+    async fetchBookings(payload) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const parseQuery = ParseDB.parseQuery("Booking");
+          parseQuery.include("listing.user");
+          parseQuery.include("listing.business_permit_img.file");
+          parseQuery.include("user");
+
+          parseQuery.equalTo("user", this.user);
+          parseQuery.descending("createdAt");
+          this.bookings = await parseQuery.find();
+
+          resolve(this.bookings);
+        } catch (error) {
+          console.log("login error", error.message);
+          reject(error.message);
+        }
+      });
+    },
     async submitBooking(data) {
       return new Promise(async (resolve, reject) => {
         try {
           console.log("submitBooking", data);
-          const booking_check = this.bookings.find(
-            (x) =>
-              x.date == data.date &&
-              x.time == data.time &&
-              x.listing_id == data.listing_id
-          );
+          const parseQuery = ParseDB.parseQuery("Booking");
+          parseQuery.equalTo("date", data.booking_date);
+          parseQuery.equalTo("listing", data.listing_object);
+          const booking_check = await parseQuery.first();
+
           console.log("booking_check", booking_check);
           if (booking_check) {
             reject({
               error: "Date already have scheduled Booking",
             });
           } else {
-            const formData = new FormData();
-            Object.keys(data).forEach((key) => {
-              formData.append(key, data[key]);
-            });
-            // await axios
-            //   .post("api/listing", data)
-            //   .then(function (response) {
-            //     resolve(response.data);
-            //   })
-            //   .catch(function (error) {
-            //     reject(error);
-            //   });
-            this.bookings.unshift({
-              ...data,
-              id: this.bookings.length + 1,
-              user: this.user.email,
-            });
+            // const formData = new FormData();
+            // Object.keys(data).forEach((key) => {
+            //   formData.append(key, data[key]);
+            // });
+
+            // this.bookings.unshift({
+            //   ...data,
+            //   id: this.bookings.length + 1,
+            //   user: this.user.email,
+            // });
+
+            const BookingClass = ParseDB.parseClass("Booking");
+            const Booking = new BookingClass();
+            Booking.set("user", this.user);
+            Booking.set("listing", data.listing_object);
+            Booking.set("date", data.booking_date);
+            Booking.set("status", "booked");
+            await Booking.save();
+
             resolve(this.bookings);
           }
         } catch (error) {

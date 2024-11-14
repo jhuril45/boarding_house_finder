@@ -144,6 +144,8 @@ const listings = computed(() => {
   console.log("getUser", getUser.value);
   return is_owner.value ? getMyListings.value : getListings.value;
 });
+
+userStore.fetchBookings();
 </script>
 
 <style scoped>

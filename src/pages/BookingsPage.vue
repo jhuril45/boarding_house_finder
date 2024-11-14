@@ -24,7 +24,7 @@
               v-for="(property, index) in listings"
               :key="index"
               class="q-pa-none"
-              :to="'/property/' + property.id"
+              :to="'/property/' + property.listing_id"
             >
               <q-item-section>
                 <q-item-label>
@@ -45,11 +45,7 @@
                         {{ property.description }}
                       </div>
                       <div class="property-title q-mt-sm">
-                        {{
-                          formatDateDisplay(
-                            new Date(property.date + " " + property.time)
-                          )
-                        }}
+                        {{ formatDateDisplay(new Date(property.date)) }}
                       </div>
                     </div>
                   </div>
@@ -76,21 +72,49 @@ const searchQuery = ref("");
 const userStore = useUserStore();
 const { getListings, getMyBookings } = storeToRefs(userStore);
 
+userStore.fetchBookings();
+
 const is_owner = computed(() => {
   return getUser.value?.user_type == "owner";
 });
 
 const listings = computed(() => {
-  const listing_arr = getListings.value
-    .filter(
-      (x) => getMyBookings.value.findIndex((y) => y.listing_id == x.id) >= 0
-    )
-    .map((x) => {
-      return {
-        ...x,
-        ...getMyBookings.value.find((y) => y.listing_id == x.id),
-      };
-    });
+  // const listing_arr = getListings.value
+  //   .filter(
+  //     (x) => getMyBookings.value.findIndex((y) => y.listing_id == x.id) >= 0
+  //   )
+  //   .map((x) => {
+  //     return {
+  //       ...x,
+  //       ...getMyBookings.value.find((y) => y.listing_id == x.id),
+  //     };
+  //   });
+
+  const listing_arr = getMyBookings.value.map((x) => {
+    const other_images = [];
+    x.get("listing")
+      .get("other_images")
+      .map((x) => {
+        other_images.push(x.url());
+      });
+    return {
+      listing_id: x.get("listing").id,
+      id: x.get("listing").id,
+      img: x.get("listing").get("img").url(),
+      business_permit_img: x.get("listing").get("business_permit_img").url(),
+      other_images: other_images,
+      title: x.get("listing").get("title"),
+      description: x.get("listing").get("description"),
+      location: x.get("listing").get("location"),
+      price: x.get("listing").get("price"),
+      user: x.get("listing").get("user").get("email"),
+      contact_number: x.get("listing").get("contact_number"),
+      person_per_room: x.get("listing").get("person_per_room"),
+      status: x.get("listing").get("status"),
+      listing_object: x.get("listing"),
+      ...x.attributes,
+    };
+  });
 
   console.log("listing_arr", listing_arr);
   return listing_arr;

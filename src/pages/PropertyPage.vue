@@ -89,12 +89,12 @@
 
       <!-- Description -->
       <q-card-section class="description-section">
-        <q-card-title class="description-title">Description</q-card-title>
+        <div class="description-title">Description</div>
         <div class="description-text">{{ listing.description }}</div>
       </q-card-section>
 
       <q-card-section class="description-section">
-        <q-card-title class="description-title">Business Permit</q-card-title>
+        <div class="description-title">Business Permit</div>
         <div>
           <q-img
             :src="listing.business_permit_img"
@@ -311,6 +311,8 @@ const router = useRouter();
 const userStore = useUserStore();
 const { getListings, getUser, getMyBookings } = storeToRefs(userStore);
 
+userStore.fetchBookings();
+
 const is_owner = computed(() => {
   return getUser.value?.get("user_type") == "owner";
 });
@@ -440,6 +442,7 @@ async function submitBooking() {
     );
     console.log("booking_date", booking_date);
     const data = await userStore.submitBooking({
+      listing_object: listing.value.object,
       listing_id: listing.value.id,
       ...bookingForm.value,
       status: "booked",
