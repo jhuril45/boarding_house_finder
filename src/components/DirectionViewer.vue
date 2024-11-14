@@ -1,176 +1,144 @@
 <template>
   <div>
-    <div v-if="location">
-      <div id="map" ref="map" style="height: 70vh"></div>
+    <div v-if="props.location">
+      <div id="map" ref="map" style="height: 70vh; width: 100%"></div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from "vue";
-import { useUserStore } from "stores/user";
-import { storeToRefs } from "pinia";
+import { ref, onMounted, watch } from "vue";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import "leaflet-routing-machine";
 
-const emit = defineEmits(["location-selected"]);
 const props = defineProps({
   location: {
     type: Object,
-    default: () => {
-      return {
-        latitude: 0,
-        longtitude: 0,
-      };
-    },
+    default: () => ({
+      latitude: 0,
+      longitude: 0,
+    }),
   },
 });
-
-const userStore = useUserStore();
-const { getUserLocation } = storeToRefs(userStore);
 
 const selected_location = ref({
-  latitude: 0,
-  longitude: 0,
+  latitude: props.location.latitude || 0,
+  longitude: props.location.longitude || 0,
 });
 const map = ref(null);
-const marker = ref(null);
-
-watch(
-  selected_location,
-  (first, second) => {
-    emit("location-selected", first);
-  },
-  {
-    deep: true,
-    // immediate: true,
-  }
-);
+const routeControl = ref(null);
+const userMarker = ref(null);
+const destinationMarker = ref(null);
 
 function initMap() {
-  var directionsService = new google.maps.DirectionsService();
-  var directionsRenderer = new google.maps.DirectionsRenderer();
-  var map = new google.maps.Map(document.getElementById("map"), {
-    zoom: 7,
-    center: {
-      lat: 8.9538327,
-      lng: 125.529305,
-    },
-  });
-  directionsRenderer.setMap(map);
+  // Initialize the map with OpenStreetMap tiles
+  map.value = L.map(map.value).setView(
+    [selected_location.value.latitude, selected_location.value.longitude],
+    13
+  );
 
-  calculateAndDisplayRoute(directionsService, directionsRenderer);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 20,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map.value);
+
+  // Set up the route control with only directions, no labels
+  routeControl.value = L.Routing.control({
+    waypoints: [
+      L.latLng(
+        selected_location.value.latitude,
+        selected_location.value.longitude
+      ),
+    ],
+    routeWhileDragging: false,
+    show: false, // Hide the instructions panel if it appears
+    lineOptions: {
+      styles: [{ color: "red", weight: 4 }],
+    },
+    createMarker: () => null, // Remove markers if not needed
+  }).addTo(map.value);
+
+  // Add the destination marker
+  destinationMarker.value = L.marker([
+    selected_location.value.latitude,
+    selected_location.value.longitude,
+  ])
+    .addTo(map.value)
+    .bindPopup("Destination");
+
+  calculateAndDisplayRoute();
 }
 
-function calculateAndDisplayRoute(directionsService, directionsRenderer) {
-  const user_location = {
-    // latitude: 8.9538327,
-    // longitude: 125.529305,
-    latitude: 1,
-    longitude: 1,
-  };
+function calculateAndDisplayRoute() {
   navigator.geolocation.getCurrentPosition(
     (position) => {
-      console.log("position", position);
-      var start = new google.maps.LatLng(
-        // 8.9538327,
-        // 125.529305
+      const userPosition = L.latLng(
         position.coords.latitude,
         position.coords.longitude
-        // parseFloat(getUserLocation.value.latitude).toFixed(2),
-        // parseFloat(getUserLocation.value.longitude).toFixed(2)
-
-        // props.location.longitude.toFixed(2)
-      );
-      var end = new google.maps.LatLng(
-        props.location.latitude,
-        props.location.longitude
-        // 8.944733,
-        // 125.5347149
-        // parseFloat(props.location.latitude).toFixed(2),
-        // parseFloat(props.location.longitude).toFixed(2)
-        // getUserLocation.value.longitude.toFixed(2)
       );
 
-      console.log("start", start);
-      console.log("end", end);
-      directionsService.route(
-        {
-          origin: start,
-          destination: end,
-          // origin: "Chicago, IL",
-          // destination: "Los Angeles, CA",
-          // travelMode: "DRIVING",
-          travelMode: google.maps.TravelMode.DRIVING,
-        },
-        function (response, status) {
-          if (status === "OK") {
-            directionsRenderer.setDirections(response);
-          } else {
-            window.alert("Directions request failed due to " + status);
-          }
-        }
-      );
+      // Update route waypoints with the user's current location and the destination
+      routeControl.value.setWaypoints([
+        userPosition,
+        L.latLng(
+          selected_location.value.latitude,
+          selected_location.value.longitude
+        ),
+      ]);
+
+      // Add or update the user marker
+      if (!userMarker.value) {
+        userMarker.value = L.marker(userPosition)
+          .addTo(map.value)
+          .bindPopup("You are here");
+      } else {
+        userMarker.value.setLatLng(userPosition);
+      }
     },
     (error) => {
       console.error("Error getting location:", error);
     }
   );
-
-  // var start = new google.maps.LatLng(
-  //   // 8.9538327,
-  //   user_location.latitude,
-  //   user_location.longitude
-  //   // parseFloat(getUserLocation.value.latitude).toFixed(2),
-  //   // parseFloat(getUserLocation.value.longitude).toFixed(2)
-
-  //   // props.location.longitude.toFixed(2)
-  // );
-  // var end = new google.maps.LatLng(
-  //   props.location.latitude,
-  //   props.location.longitude
-  //   // 8.944733,
-  //   // 125.5347149
-  //   // parseFloat(props.location.latitude).toFixed(2),
-  //   // parseFloat(props.location.longitude).toFixed(2)
-  //   // getUserLocation.value.longitude.toFixed(2)
-  // );
-
-  // console.log("start", start);
-  // console.log("end", end);
-  // directionsService.route(
-  //   {
-  //     origin: start,
-  //     destination: end,
-  //     // origin: "Chicago, IL",
-  //     // destination: "Los Angeles, CA",
-  //     travelMode: "DRIVING",
-  //   },
-  //   function (response, status) {
-  //     if (status === "OK") {
-  //       directionsRenderer.setDirections(response);
-  //     } else {
-  //       window.alert("Directions request failed due to " + status);
-  //     }
-  //   }
-  // );
 }
 
 onMounted(() => {
-  // Load Google Maps API
-  console.log("getUserLocation", getUserLocation.value);
-  console.log(
-    "getUserLocation 2",
-    parseFloat(getUserLocation.value.longitude).toFixed(2)
-  );
   selected_location.value = JSON.parse(JSON.stringify(props.location));
   setTimeout(() => {
-    console.log("selected_location.value", selected_location.value);
     initMap();
   }, 1000);
-  // const script = document.createElement("script");
-  // script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY`;
-  // script.async = true;
-  // script.defer = true;
-  // script.onload = initMap;
-  // document.head.appendChild(script);
 });
+
+watch(
+  () => props.location,
+  (newLocation) => {
+    selected_location.value = { ...newLocation };
+    if (routeControl.value) {
+      calculateAndDisplayRoute();
+    }
+    // Update the destination marker when location changes
+    if (destinationMarker.value) {
+      destinationMarker.value.setLatLng([
+        selected_location.value.latitude,
+        selected_location.value.longitude,
+      ]);
+    }
+  },
+  { deep: true }
+);
 </script>
+
+<style>
+@import "leaflet/dist/leaflet.css";
+
+#map {
+  height: 70vh;
+  width: 100%;
+  position: relative;
+}
+
+.leaflet-routing-alternatives-container {
+  display: none !important;
+}
+</style>
