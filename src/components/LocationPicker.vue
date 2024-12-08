@@ -14,6 +14,14 @@ import { useUserStore } from "stores/user";
 import { storeToRefs } from "pinia";
 import L from "leaflet"; // Import Leaflet
 
+delete L.Icon.Default.prototype._getIconUrl;
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "/leaflet/marker-icon-2x.png",
+  iconUrl: "/leaflet/marker-icon.png",
+  shadowUrl: "/leaflet/marker-shadow.png",
+});
+
 const emit = defineEmits(["location-selected"]);
 
 const userStore = useUserStore();
