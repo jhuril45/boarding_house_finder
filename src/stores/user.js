@@ -383,8 +383,7 @@ export const useUserStore = defineStore("counter", {
           //   });
           const index = this.listings.findIndex((x) => x.id === data.id);
           this.listings.splice(index, 1, {
-            ...this.listings[index],
-            status: "full",
+            ...data,
           });
           resolve(this.listings);
         } catch (error) {

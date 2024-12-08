@@ -26,7 +26,7 @@
     <!-- Listing Details -->
     <q-card class="listing-card">
       <q-card-section class="host-section q-pb-sm">
-        <q-card-title>
+        <div>
           <div class="host-name">{{ listing.title }}</div>
           <div class="property-title q-mt-sm" v-if="booking && !is_owner">
             Booked on
@@ -47,16 +47,12 @@
             <span
               :class="
                 'text-capitalize ' +
-                (listing.status == 'full'
-                  ? 'text-green'
-                  : listing.status == 'available'
-                  ? 'text-warning'
-                  : 'text-red')
+                (listing.status == 'full' ? 'text-red' : 'text-green')
               "
               >({{ listing.status }})</span
             >
           </div>
-        </q-card-title>
+        </div>
       </q-card-section>
 
       <q-card-section class="details-section">
@@ -89,12 +85,12 @@
 
       <!-- Description -->
       <q-card-section class="description-section">
-        <q-card-title class="description-title">Description</q-card-title>
+        <div class="description-title">Description</div>
         <div class="description-text">{{ listing.description }}</div>
       </q-card-section>
 
       <q-card-section class="description-section">
-        <q-card-title class="description-title">Business Permit</q-card-title>
+        <div class="description-title">Business Permit</div>
         <div>
           <q-img
             :src="listing.business_permit_img"
@@ -116,9 +112,10 @@
               />
               <q-btn
                 v-else-if="!booking && listing.status === 'available'"
-                label="Book"
+                :label="listing.status === 'available' ? 'Book' : 'Full'"
                 color="primary"
                 @click="initBooking()"
+                :disabled="listing.status !== 'available'"
               />
             </div>
             <div class="q-pa-xs" v-else-if="booking_list.length">
@@ -133,9 +130,9 @@
               v-if="is_owner && getUser.email == listing.user"
             >
               <q-btn
-                label="Set as Full"
+                :label="listing.status != 'full' ? 'Set as Full' : 'Set as Available'"
                 color="warning"
-                @click="setFullListing()"
+                @click="setFullListing(listing.status != 'full' ? 'full' : 'available')"
               />
             </div>
             <div
@@ -401,10 +398,11 @@ async function removeListing() {
   router.push("/");
 }
 
-async function setFullListing() {
+async function setFullListing(status) {
   console.log("setFullListing", listing.value);
   const data = await userStore.setFullListing({
     ...listing.value,
+    status: status,
   });
   console.log("setFullListing", data);
   $q.notify({

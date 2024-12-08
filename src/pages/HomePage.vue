@@ -47,11 +47,7 @@
                           class="property-subtitle"
                           :class="
                             'text-capitalize ' +
-                            (property.status == 'full'
-                              ? 'text-green'
-                              : property.status == 'available'
-                              ? 'text-warning'
-                              : 'text-red')
+                            (property.status == 'full' ? 'text-red' : 'text-green')
                           "
                         >
                           {{ property.status }}
@@ -99,11 +95,7 @@
                             class="property-subtitle"
                             :class="
                               'text-capitalize ' +
-                              (property.status == 'full'
-                                ? 'text-green'
-                                : property.status == 'available'
-                                ? 'text-warning'
-                                : 'text-red')
+                              (property.status == 'full' ? 'text-red' : 'text-green')
                             "
                           >
                             {{ property.status }}
