@@ -1,0 +1,249 @@
+<template>
+  <q-form @submit="submitRiskAssessment">
+    <div class="row q-gutter-y-md">
+      <div class="col-12">
+        <q-input outlined v-model="form.date" type="date" label="Date"/>
+      </div>
+
+      <div class="col-12">
+        <q-select
+          outlined
+          v-model="form.client"
+          use-input
+          hide-selected
+          fill-input
+          input-debounce="0"
+          :options="client_options"
+          emit-value
+          map-options
+          @filter="filterClients"
+          label="Client"
+        >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey">
+                No results
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+      </div>
+
+      <div class="col-12">
+        <q-input outlined v-model="form.location" type="text" label="Location"/>
+      </div>
+
+      <div class="col-12">
+        <q-select
+          outlined
+          v-model="form.technician"
+          use-input
+          hide-selected
+          fill-input
+          input-debounce="0"
+          :options="technicians_options"
+          emit-value
+          map-options
+          @filter="filterTechnicians"
+          label="Technician 1"
+        >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey">
+                No results
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+      </div>
+
+      <div class="col-12">
+        <q-select
+          outlined
+          v-model="form.technician2"
+          use-input
+          hide-selected
+          fill-input
+          input-debounce="0"
+          :options="technicians2_options"
+          emit-value
+          map-options
+          @filter="filterTechnicians2"
+          label="Technician 2"
+        >
+          <template v-slot:no-option>
+            <q-item>
+              <q-item-section class="text-grey">
+                No results
+              </q-item-section>
+            </q-item>
+          </template>
+        </q-select>
+      </div>
+
+      <div class="col-12">
+        <q-input outlined v-model="form.task" type="text" label="Task"/>
+      </div>
+
+      <div class="col-12">
+        <q-select
+          filled
+          v-model="form.hazards"
+          multiple
+          :options="hazards"
+          label="Hazards"
+        />
+      </div>
+
+      <div class="col-12">
+        <q-select
+          filled
+          v-model="form.control_measures"
+          multiple
+          :options="control_measures"
+          label="Control Measures"
+        />
+      </div>
+
+      <div class="col-12">
+        <q-input outlined v-model="form.additional_hazard_controls" type="text" label="Additional Hazards and controls"/>
+      </div>
+
+      <div class="col-12 row">
+        <q-btn
+          size="md"
+          class="full-width"
+          type="submit"
+          color="primary"
+          label="Submit" />
+      </div>
+    </div>
+  </q-form>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "stores/user";
+import useFormatter from '../composables/useFormatter'
+
+import RiskAssessmentsTable from 'components/RiskAssessmentsTable.vue'
+
+
+const userStore = useUserStore();
+const { formatDateDisplay } = useFormatter();
+
+const { getClients, getTechnicians } = storeToRefs(userStore);
+
+const client_options = ref(getClients.value.map(x => ({value: x.id, label: x.name})))
+const technicians_options = ref(getTechnicians.value.map(x => ({value: x.id, label: x.name})))
+const technicians2_options = ref(getTechnicians.value.map(x => ({value: x.id, label: x.name})))
+
+function filterClients (val, update, abort) {
+  update(() => {
+    const needle = val.toLowerCase()
+    client_options.value = getClients.value.filter(v => v.name.toLowerCase().indexOf(needle) > -1).map(x => ({value: x.id, label: x.name}))
+  })
+}
+
+function filterTechnicians (val, update, abort) {
+  update(() => {
+    const needle = val.toLowerCase()
+    technicians_options.value = getTechnicians.value.filter(v => v.name.toLowerCase().indexOf(needle) > -1).map(x => ({value: x.id, label: x.name}))
+  })
+}
+
+function filterTechnicians2 (val, update, abort) {
+  update(() => {
+    const needle = val.toLowerCase()
+    technicians2_options.value = getTechnicians.value.filter(v => v.name.toLowerCase().indexOf(needle) > -1).map(x => ({value: x.id, label: x.name}))
+  })
+}
+
+const hazards = ref([
+  "Hot Work",
+  "Slip, trip & Falls",
+  "Exposure to noise",
+  "Working at Heights",
+  "Working in tight spaces",
+  "Hot surface",
+  "H2S present",
+  "Confined space entry",
+  "Limited access",
+  "Pinch Points",
+  "Operating Power equipment",
+  "Awkward body positions",
+  "Metal grinding/sparks",
+  "First time performing task",
+  "Corroded metals",
+  "Chemical Exposure",
+  "Manmade minerals",
+  "Electrical hazards",
+  "Critical lift",
+  "Weather -Hot",
+  "Weather -Cold",
+  "Airborne contaminants",
+  "Flammable products",
+  "Working alone",
+  "Wildlife",
+  "Surrounding Traffic",
+  "Surrounding Workers"
+])
+
+const control_measures = ref([
+  "Safety Glass",
+  "Daily Work Permit",
+  "Full Face shield",
+  "Gas Monitor",
+  "Careful driving",
+  "Hearing Protection",
+  "FR Coveralls",
+  "Identify Tie-offs",
+  "Air Circulation",
+  "Review MSDS/SDS",
+  "Supplied air",
+  "Housekeeping",
+  "Fire Extinguisher",
+  "Be aware / Alert",
+  "Confined space entry",
+  "Respirators",
+  "Lock out/Tag out",
+  "Use care/caution",
+  "Stay clear",
+  "Barricades/Signs",
+  "Review rescue plan",
+  "Use proper PPE"
+])
+
+const form = ref({
+  id: null,
+  date: null,
+  client: null,
+  location: null,
+  technician: null,
+  technician2: null,
+  task: null,
+  hazards: [],
+  control_measures: [],
+  additional_hazard_controls: null,
+  permit_required: null,
+  proceed_safe_work: null,
+  images: [],
+})
+
+async function submitRiskAssessment() {
+  try {
+    console.log('submitRiskAssessment')
+  } catch(error) {
+
+  }
+}
+
+onMounted(() => {
+  userStore.fetchRiskAssessments()
+  console.log('client_options', client_options.value)
+})
+</script>
+
+
+
