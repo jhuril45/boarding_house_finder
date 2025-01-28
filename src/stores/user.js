@@ -34,6 +34,16 @@ export const useUserStore = defineStore("counter", {
         name: 'Techinician 3'
       }
     ],
+    branches: [
+      {
+        id: 1,
+        name: 'Branch 1'
+      },
+      {
+        id: 2,
+        name: 'Branch 2'
+      },
+    ],
     risk_assessments: [],
   }),
 
@@ -46,6 +56,9 @@ export const useUserStore = defineStore("counter", {
     },
     getTechnicians(state) {
       return state.technicians;
+    },
+    getBranches(state) {
+      return state.branches;
     },
     getRiskAssessments(state) {
       return state.risk_assessments;
@@ -65,8 +78,18 @@ export const useUserStore = defineStore("counter", {
                 name: 'Client 2'
               },
               location: 'test location',
-              technician: 'test technician',
-              technician2: 'test technician2',
+              technician: {
+                id: 1,
+                name: 'Techinician 1'
+              },
+              technician2: {
+                id: 2,
+                name: 'Techinician 2'
+              },
+              branch: {
+                id: 1,
+                name: 'Branch 1'
+              },
               task: 'test task',
               hazards: [
                 'Hot Work',
@@ -89,6 +112,7 @@ export const useUserStore = defineStore("counter", {
               images: [
 
               ],
+              image_previews: ['https://cdn.quasar.dev/img/mountains.jpg','https://cdn.quasar.dev/img/parallax1.jpg','https://cdn.quasar.dev/img/parallax2.jpg']
             },
           ]
           // const parseQuery = ParseDB.parseQuery("Listing");
@@ -179,6 +203,30 @@ export const useUserStore = defineStore("counter", {
         }
       });
     },
+    async submitAssessment(data) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          const client_index = this.clients.findIndex(x => x.id == data.client)
+          const technician_index = this.technicians.findIndex(x => x.id == data.client)
+          const technician2_index = this.technicians.findIndex(x => x.id == data.client)
+          const branch_index = this.branches.findIndex(x => x.id == data.branch)
+          this.risk_assessments.push({
+            id: this.risk_assessments.length + 1,
+            ...data,
+            client: this.clients[client_index],
+            technician: this.technicians[technician_index],
+            technician2: this.technicians[technician2_index],
+            branch: this.branches[branch_index],
+          })
+          resolve();
+        } catch (error) {
+          console.log("login error", error);
+          resolve();
+        }
+      });
+    },
+
+    ///
     pushListing(val) {
       const other_images = [];
       val.get("other_images").map((x) => {

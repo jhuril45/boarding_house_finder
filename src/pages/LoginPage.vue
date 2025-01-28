@@ -93,8 +93,8 @@ async function loginUser() {
     if (loading.value) return;
     form_error.value = null
     loading.value = true;
-    await userStore.logoutUser()
-    const response = await userStore.loginUser({
+    await userStore.logout()
+    const response = await userStore.login({
       email: form.value.email,
       password: form.value.password
     })
@@ -115,6 +115,7 @@ async function loginUser() {
   } catch (error) {
     console.log('loginUser', error)
   } finally {
+    router.push('/')
     loading.value = false;
   }
 }

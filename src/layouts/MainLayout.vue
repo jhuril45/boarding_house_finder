@@ -12,10 +12,10 @@
         />
 
         <q-toolbar-title>
-          DVA Facility
+          DV Facility
         </q-toolbar-title>
 
-        <div>DVA v{{ $q.version }}</div>
+        <div>DV v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
 
@@ -51,8 +51,13 @@ import EssentialLink from 'components/EssentialLink.vue'
 
 const linksList = [
   {
+    title: 'Dashboard',
+    caption: '',
+    icon: 'show_chart',
+    link: '/'
+  },
+  {
     title: 'Risk Assessment',
-    caption: 'Field Level Risk Assessment',
     icon: 'description',
     link: '/risk-assessment'
   }

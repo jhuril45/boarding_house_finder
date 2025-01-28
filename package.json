@@ -1,8 +1,8 @@
 {
-  "name": "dva-facility",
+  "name": "dv-facility",
   "version": "0.0.1",
-  "description": "DVA Facility App",
-  "productName": "DVA Facility",
+  "description": "DV Facility App",
+  "productName": "DV Facility",
   "author": "jhuril45 <jhuril45@gmail.com>",
   "type": "module",
   "private": true,
